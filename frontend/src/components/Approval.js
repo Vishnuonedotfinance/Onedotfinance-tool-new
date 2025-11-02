@@ -87,6 +87,19 @@ export default function Approval({ user }) {
 
   const canRequestApproval = user.role === 'Staff';
   const canApprove = user.role === 'Director';
+  const canReset = user.role === 'Staff' || user.role === 'Admin';
+
+  const handleResetApprovals = async () => {
+    if (window.confirm('Are you sure you want to reset all approval records? This action cannot be undone.')) {
+      try {
+        const response = await api.delete('/approvals/reset');
+        toast.success(response.data.message);
+        loadData();
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to reset approvals');
+      }
+    }
+  };
 
   return (
     <div data-testid="approval-page">
