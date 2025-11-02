@@ -355,6 +355,47 @@ export default function Approval({ user }) {
           </table>
         </div>
       </div>
+
+      {/* Remarks Modal */}
+      {showRemarkModal && (
+        <div className="modal-overlay" onClick={() => setShowRemarkModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} data-testid="remark-modal">
+            <div className="modal-header">
+              <h2>{remarkType === 'request' ? 'Add Remarks (Optional)' : 'Add Notes'}</h2>
+              <button className="modal-close" onClick={() => setShowRemarkModal(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>{remarkType === 'request' ? 'Staff Remarks' : 'Director Notes'}</label>
+                <textarea
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  placeholder="Enter remarks or notes..."
+                  data-testid="remarks-textarea"
+                  rows="5"
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                onClick={() => setShowRemarkModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn-primary" 
+                onClick={remarkType === 'request' ? submitRequestApproval : submitApprovalAction}
+                data-testid="submit-remarks-button"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
