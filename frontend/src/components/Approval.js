@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../App';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, PauseCircle } from 'lucide-react';
 
 export default function Approval({ user }) {
   const [approvals, setApprovals] = useState([]);
@@ -9,6 +9,11 @@ export default function Approval({ user }) {
   const [contractors, setContractors] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showRemarkModal, setShowRemarkModal] = useState(false);
+  const [remarkType, setRemarkType] = useState(''); // 'request' or 'action'
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [remarks, setRemarks] = useState('');
+  const [actionType, setActionType] = useState('');
 
   useEffect(() => {
     loadData();
