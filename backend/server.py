@@ -665,7 +665,7 @@ async def get_approvals(current_user: dict = Depends(get_current_user)):
     return approvals
 
 @api_router.post("/approvals/{item_type}/{item_id}/request")
-async def request_approval(item_type: str, item_id: str, current_user: dict = Depends(get_current_user)):
+async def request_approval(item_type: str, item_id: str, request: ApprovalRequest, current_user: dict = Depends(get_current_user)):
     if current_user['role'] == 'Director':
         raise HTTPException(status_code=403, detail="Directors cannot request approval")
     
@@ -673,7 +673,8 @@ async def request_approval(item_type: str, item_id: str, current_user: dict = De
         item_type=item_type,
         item_id=item_id,
         requested_by=current_user['user_id'],
-        status='Requested'
+        status='Requested',
+        staff_remarks=request.staff_remarks
     )
     
     doc = approval.model_dump()
