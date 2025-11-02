@@ -640,28 +640,56 @@ async def update_contractor(contractor_id: str, update_data: dict, current_user:
 
 @api_router.post("/contractors/generate-ica")
 async def generate_ica(request: ICAGenerateRequest):
-    doc = Document()
-    
-    title = doc.add_paragraph()
-    title.add_run('INDEPENDENT CONTRACTOR AGREEMENT').bold = True
-    title.alignment = 1
-    
-    doc.add_paragraph(f"Contractor Name: {request.contractor_name}")
-    doc.add_paragraph(f"Address: {request.address}")
-    doc.add_paragraph(f"Start Date: {request.start_date}")
-    doc.add_paragraph(f"Tenure: {request.tenure_months} months")
-    doc.add_paragraph(f"Amount: INR {request.amount_inr}")
-    doc.add_paragraph(f"Designation: {request.designation}")
-    
-    bio = BytesIO()
-    doc.save(bio)
-    bio.seek(0)
-    
-    return Response(
-        content=bio.getvalue(),
-        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        headers={'Content-Disposition': f'attachment; filename="ICA_{request.contractor_name}.docx"'}
-    )
+    try:
+        template_path = ROOT_DIR / 'templates' / 'ICA_Sample.docx'
+        output_path = f"/tmp/ICA_{request.contractor_name}_{uuid.uuid4().hex[:6]}.docx"
+        shutil.copy(template_path, output_path)
+        
+        merge_data = {
+            'contractor_name': request.contractor_name,
+            'address': request.address,
+            'start_date': request.start_date,
+            'tenure_months': str(request.tenure_months),
+            'amount_inr': str(request.amount_inr),
+            'designation': request.designation,
+        }
+        
+        document = MailMerge(output_path)
+        document.merge(**merge_data)
+        document.write(output_path)
+        
+        with open(output_path, 'rb') as f:
+            content = f.read()
+        
+        return Response(
+            content=content,
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            headers={'Content-Disposition': f'attachment; filename="ICA_{request.contractor_name}.docx"'}
+        )
+    except Exception as e:
+        logger.error(f"ICA generation error: {str(e)}")
+        doc = Document()
+        
+        title = doc.add_paragraph()
+        title.add_run('INDEPENDENT CONTRACTOR AGREEMENT').bold = True
+        title.alignment = 1
+        
+        doc.add_paragraph(f"Contractor Name: {request.contractor_name}")
+        doc.add_paragraph(f"Address: {request.address}")
+        doc.add_paragraph(f"Start Date: {request.start_date}")
+        doc.add_paragraph(f"Tenure: {request.tenure_months} months")
+        doc.add_paragraph(f"Amount: INR {request.amount_inr}")
+        doc.add_paragraph(f"Designation: {request.designation}")
+        
+        bio = BytesIO()
+        doc.save(bio)
+        bio.seek(0)
+        
+        return Response(
+            content=bio.getvalue(),
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            headers={'Content-Disposition': f'attachment; filename="ICA_{request.contractor_name}.docx"'}
+        )
 
 # ============= EMPLOYEE ROUTES =============
 
