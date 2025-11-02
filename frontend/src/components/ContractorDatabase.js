@@ -9,6 +9,8 @@ export default function ContractorDatabase({ user }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [sortBy, setSortBy] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [formData, setFormData] = useState({
@@ -70,14 +72,50 @@ export default function ContractorDatabase({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/contractors', formData);
-      toast.success('Contractor added successfully');
+      if (editMode) {
+        await api.patch(`/contractors/${editId}`, formData);
+        toast.success('Contractor updated successfully');
+      } else {
+        await api.post('/contractors', formData);
+        toast.success('Contractor added successfully');
+      }
       setShowModal(false);
+      setEditMode(false);
+      setEditId(null);
       resetForm();
       loadContractors();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add contractor');
+      toast.error(error.response?.data?.detail || `Failed to ${editMode ? 'update' : 'add'} contractor`);
     }
+  };
+
+  const handleEdit = (contractor) => {
+    setFormData({
+      name: contractor.name,
+      doj: contractor.doj,
+      start_date: contractor.start_date,
+      tenure_months: contractor.tenure_months,
+      dob: contractor.dob,
+      pan: contractor.pan,
+      aadhar: contractor.aadhar,
+      mobile: contractor.mobile,
+      personal_email: contractor.personal_email,
+      bank_name: contractor.bank_name,
+      account_holder: contractor.account_holder,
+      account_no: contractor.account_no,
+      ifsc: contractor.ifsc,
+      address_1: contractor.address_1,
+      pincode: contractor.pincode,
+      city: contractor.city,
+      address_2: contractor.address_2 || '',
+      department: contractor.department,
+      monthly_retainer_inr: contractor.monthly_retainer_inr,
+      designation: contractor.designation,
+      approver_user_id: contractor.approver_user_id
+    });
+    setEditId(contractor.id);
+    setEditMode(true);
+    setShowModal(true);
   };
 
   const resetForm = () => {
@@ -143,7 +181,7 @@ export default function ContractorDatabase({ user }) {
             />
             <button
               className="btn-success"
-              onClick={() => setShowModal(true)}
+              onClick={() => { setEditMode(false); setShowModal(true); }}
               data-testid="add-contractor-button"
             >
               <Plus size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
@@ -206,7 +244,11 @@ export default function ContractorDatabase({ user }) {
                   </td>
                   <td>
                     <div className="action-buttons">
-                      <button className="btn-icon" data-testid={`edit-contractor-${contractor.id}`}>
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => handleEdit(contractor)}
+                        data-testid={`edit-contractor-${contractor.id}`}
+                      >
                         <Edit size={16} />
                       </button>
                       <button className="btn-icon" data-testid={`download-contractor-${contractor.id}`}>
@@ -223,9 +265,9 @@ export default function ContractorDatabase({ user }) {
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} data-testid="add-contractor-modal">
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} data-testid="add-contractor-modal" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="modal-header">
-              <h2>Add New Contractor</h2>
+              <h2>{editMode ? 'Edit Contractor' : 'Add New Contractor'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>&times;</button>
             </div>
             <form onSubmit={handleSubmit}>
@@ -233,171 +275,71 @@ export default function ContractorDatabase({ user }) {
                 <div className="form-grid">
                   <div className="form-group">
                     <label>Name *</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                      data-testid="contractor-name-input"
-                    />
+                    <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required data-testid="contractor-name-input" />
                   </div>
                   <div className="form-group">
                     <label>Date of Joining *</label>
-                    <input
-                      type="date"
-                      value={formData.doj}
-                      onChange={(e) => setFormData({ ...formData, doj: e.target.value })}
-                      required
-                      data-testid="doj-input"
-                    />
+                    <input type="date" value={formData.doj} onChange={(e) => setFormData({ ...formData, doj: e.target.value })} required data-testid="doj-input" />
                   </div>
                   <div className="form-group">
                     <label>Start Date *</label>
-                    <input
-                      type="date"
-                      value={formData.start_date}
-                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                      required
-                      data-testid="start-date-input"
-                    />
+                    <input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} required data-testid="start-date-input" />
                   </div>
                   <div className="form-group">
                     <label>Tenure (Months) *</label>
-                    <input
-                      type="number"
-                      value={formData.tenure_months}
-                      onChange={(e) => setFormData({ ...formData, tenure_months: parseInt(e.target.value) })}
-                      required
-                      data-testid="tenure-input"
-                    />
+                    <input type="number" value={formData.tenure_months} onChange={(e) => setFormData({ ...formData, tenure_months: parseInt(e.target.value) })} required data-testid="tenure-input" />
                   </div>
                   <div className="form-group">
                     <label>Date of Birth *</label>
-                    <input
-                      type="date"
-                      value={formData.dob}
-                      onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                      required
-                      data-testid="dob-input"
-                    />
+                    <input type="date" value={formData.dob} onChange={(e) => setFormData({ ...formData, dob: e.target.value })} required data-testid="dob-input" />
                   </div>
                   <div className="form-group">
                     <label>Mobile *</label>
-                    <input
-                      type="tel"
-                      value={formData.mobile}
-                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                      required
-                      data-testid="mobile-input"
-                    />
+                    <input type="tel" value={formData.mobile} onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} required data-testid="mobile-input" />
                   </div>
                   <div className="form-group">
                     <label>Personal Email *</label>
-                    <input
-                      type="email"
-                      value={formData.personal_email}
-                      onChange={(e) => setFormData({ ...formData, personal_email: e.target.value })}
-                      required
-                      data-testid="email-input"
-                    />
+                    <input type="email" value={formData.personal_email} onChange={(e) => setFormData({ ...formData, personal_email: e.target.value })} required data-testid="email-input" />
                   </div>
                   <div className="form-group">
                     <label>PAN *</label>
-                    <input
-                      type="text"
-                      value={formData.pan}
-                      onChange={(e) => setFormData({ ...formData, pan: e.target.value })}
-                      required
-                      data-testid="pan-input"
-                    />
+                    <input type="text" value={formData.pan} onChange={(e) => setFormData({ ...formData, pan: e.target.value })} required data-testid="pan-input" />
                   </div>
                   <div className="form-group">
                     <label>Aadhar *</label>
-                    <input
-                      type="text"
-                      value={formData.aadhar}
-                      onChange={(e) => setFormData({ ...formData, aadhar: e.target.value })}
-                      required
-                      data-testid="aadhar-input"
-                    />
+                    <input type="text" value={formData.aadhar} onChange={(e) => setFormData({ ...formData, aadhar: e.target.value })} required data-testid="aadhar-input" />
                   </div>
                   <div className="form-group">
                     <label>Bank Name *</label>
-                    <input
-                      type="text"
-                      value={formData.bank_name}
-                      onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-                      required
-                      data-testid="bank-name-input"
-                    />
+                    <input type="text" value={formData.bank_name} onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })} required data-testid="bank-name-input" />
                   </div>
                   <div className="form-group">
                     <label>Account Holder *</label>
-                    <input
-                      type="text"
-                      value={formData.account_holder}
-                      onChange={(e) => setFormData({ ...formData, account_holder: e.target.value })}
-                      required
-                      data-testid="account-holder-input"
-                    />
+                    <input type="text" value={formData.account_holder} onChange={(e) => setFormData({ ...formData, account_holder: e.target.value })} required data-testid="account-holder-input" />
                   </div>
                   <div className="form-group">
                     <label>Account No *</label>
-                    <input
-                      type="text"
-                      value={formData.account_no}
-                      onChange={(e) => setFormData({ ...formData, account_no: e.target.value })}
-                      required
-                      data-testid="account-no-input"
-                    />
+                    <input type="text" value={formData.account_no} onChange={(e) => setFormData({ ...formData, account_no: e.target.value })} required data-testid="account-no-input" />
                   </div>
                   <div className="form-group">
                     <label>IFSC *</label>
-                    <input
-                      type="text"
-                      value={formData.ifsc}
-                      onChange={(e) => setFormData({ ...formData, ifsc: e.target.value })}
-                      required
-                      data-testid="ifsc-input"
-                    />
+                    <input type="text" value={formData.ifsc} onChange={(e) => setFormData({ ...formData, ifsc: e.target.value })} required data-testid="ifsc-input" />
                   </div>
                   <div className="form-group form-group-full">
                     <label>Address 1 *</label>
-                    <input
-                      type="text"
-                      value={formData.address_1}
-                      onChange={(e) => setFormData({ ...formData, address_1: e.target.value })}
-                      required
-                      data-testid="address-1-input"
-                    />
+                    <input type="text" value={formData.address_1} onChange={(e) => setFormData({ ...formData, address_1: e.target.value })} required data-testid="address-1-input" />
                   </div>
                   <div className="form-group">
                     <label>Pincode *</label>
-                    <input
-                      type="text"
-                      value={formData.pincode}
-                      onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                      required
-                      data-testid="pincode-input"
-                    />
+                    <input type="text" value={formData.pincode} onChange={(e) => setFormData({ ...formData, pincode: e.target.value })} required data-testid="pincode-input" />
                   </div>
                   <div className="form-group">
                     <label>City *</label>
-                    <input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      required
-                      data-testid="city-input"
-                    />
+                    <input type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} required data-testid="city-input" />
                   </div>
                   <div className="form-group">
                     <label>Department *</label>
-                    <select
-                      value={formData.department}
-                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      data-testid="department-select"
-                    >
+                    <select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} data-testid="department-select">
                       <option value="PPC">PPC</option>
                       <option value="SEO">SEO</option>
                       <option value="Content">Content</option>
@@ -407,32 +349,15 @@ export default function ContractorDatabase({ user }) {
                   </div>
                   <div className="form-group">
                     <label>Monthly Retainer (INR) *</label>
-                    <input
-                      type="number"
-                      value={formData.monthly_retainer_inr}
-                      onChange={(e) => setFormData({ ...formData, monthly_retainer_inr: parseFloat(e.target.value) })}
-                      required
-                      data-testid="retainer-input"
-                    />
+                    <input type="number" value={formData.monthly_retainer_inr} onChange={(e) => setFormData({ ...formData, monthly_retainer_inr: parseFloat(e.target.value) })} required data-testid="retainer-input" />
                   </div>
                   <div className="form-group">
                     <label>Designation *</label>
-                    <input
-                      type="text"
-                      value={formData.designation}
-                      onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                      required
-                      data-testid="designation-input"
-                    />
+                    <input type="text" value={formData.designation} onChange={(e) => setFormData({ ...formData, designation: e.target.value })} required data-testid="designation-input" />
                   </div>
                   <div className="form-group">
                     <label>Approver (Director) *</label>
-                    <select
-                      value={formData.approver_user_id}
-                      onChange={(e) => setFormData({ ...formData, approver_user_id: e.target.value })}
-                      required
-                      data-testid="approver-select"
-                    >
+                    <select value={formData.approver_user_id} onChange={(e) => setFormData({ ...formData, approver_user_id: e.target.value })} required data-testid="approver-select">
                       <option value="">Select Approver</option>
                       {users.map(u => (
                         <option key={u.id} value={u.id}>{u.name}</option>
@@ -442,11 +367,9 @@ export default function ContractorDatabase({ user }) {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
+                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary" data-testid="save-contractor-button">
-                  Save Contractor
+                  {editMode ? 'Update Contractor' : 'Save Contractor'}
                 </button>
               </div>
             </form>
