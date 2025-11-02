@@ -230,7 +230,11 @@ export default function ClientDatabase({ user }) {
                   </td>
                   <td>
                     <div className="action-buttons">
-                      <button className="btn-icon" data-testid={`edit-client-${client.id}`}>
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => handleEdit(client)}
+                        data-testid={`edit-client-${client.id}`}
+                      >
                         <Edit size={16} />
                       </button>
                       <button className="btn-icon" data-testid={`download-client-${client.id}`}>
