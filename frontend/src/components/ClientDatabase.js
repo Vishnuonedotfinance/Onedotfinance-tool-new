@@ -68,14 +68,46 @@ export default function ClientDatabase({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/clients', formData);
-      toast.success('Client added successfully');
+      if (editMode) {
+        await api.patch(`/clients/${editId}`, formData);
+        toast.success('Client updated successfully');
+      } else {
+        await api.post('/clients', formData);
+        toast.success('Client added successfully');
+      }
       setShowModal(false);
+      setEditMode(false);
+      setEditId(null);
       resetForm();
       loadClients();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add client');
+      toast.error(error.response?.data?.detail || `Failed to ${editMode ? 'update' : 'add'} client`);
     }
+  };
+
+  const handleEdit = (client) => {
+    setFormData({
+      client_name: client.client_name,
+      address: client.address,
+      start_date: client.start_date,
+      tenure_months: client.tenure_months,
+      currency_preference: client.currency_preference,
+      service: client.service,
+      amount_inr: client.amount_inr,
+      amount_ppc: client.amount_ppc || 0,
+      amount_seo: client.amount_seo || 0,
+      authorised_signatory: client.authorised_signatory,
+      signatory_designation: client.signatory_designation,
+      gst: client.gst,
+      poc_name: client.poc_name,
+      poc_email: client.poc_email,
+      poc_designation: client.poc_designation,
+      poc_mobile: client.poc_mobile,
+      approver_user_id: client.approver_user_id
+    });
+    setEditId(client.id);
+    setEditMode(true);
+    setShowModal(true);
   };
 
   const resetForm = () => {
