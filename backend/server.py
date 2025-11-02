@@ -408,6 +408,11 @@ async def update_user(user_id: str, role: str = None, status: str = None, curren
     if current_user['role'] != 'Admin':
         raise HTTPException(status_code=403, detail="Only Admin can update users")
     
+    # Check if user being updated is admin
+    user_to_update = await db.users.find_one({"id": user_id})
+    if user_to_update and user_to_update.get('role') == 'Admin' and role and role != 'Admin':
+        raise HTTPException(status_code=403, detail="Cannot change Admin role")
+    
     update_data = {}
     if role:
         update_data['role'] = role
