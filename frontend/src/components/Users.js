@@ -49,7 +49,7 @@ export default function Users({ user }) {
       toast.success('User role updated');
       loadUsers();
     } catch (error) {
-      toast.error('Failed to update user');
+      toast.error(error.response?.data?.detail || 'Failed to update user');
     }
   };
 
