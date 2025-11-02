@@ -1,0 +1,733 @@
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, BackgroundTasks, Response
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from dotenv import load_dotenv
+from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+import logging
+from pathlib import Path
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from typing import List, Optional, Literal
+import uuid
+from datetime import datetime, timezone, timedelta
+import jwt
+import bcrypt
+from io import BytesIO
+from docx import Document
+from docx.shared import Pt, RGBColor
+import random
+
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
+# MongoDB connection
+mongo_url = os.environ['MONGO_URL']
+client = AsyncIOMotorClient(mongo_url)
+db = client[os.environ['DB_NAME']]
+
+# JWT Configuration
+JWT_SECRET = os.environ.get('JWT_SECRET', 'piperocket-secret-key-2025')
+JWT_ALGORITHM = 'HS256'
+
+app = FastAPI()
+api_router = APIRouter(prefix="/api")
+security = HTTPBearer()
+
+# ============= MODELS =============
+
+class UserRole(BaseModel):
+    role: Literal['Admin', 'Director', 'Staff']
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: EmailStr
+    mobile: Optional[str] = None
+    role: Literal['Admin', 'Director', 'Staff']
+    status: Literal['Active', 'Invited'] = 'Active'
+    password_hash: Optional[str] = None
+    otp_verified: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    mobile: Optional[str] = None
+    role: Literal['Admin', 'Director', 'Staff']
+    password: str
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class OTPVerifyRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+class Client(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"client_{uuid.uuid4().hex[:8]}")
+    org: str = "piperocket"
+    client_name: str
+    address: str
+    start_date: str
+    tenure_months: int
+    end_date: str = ""
+    currency_preference: Literal['USD', 'INR'] = 'INR'
+    service: Literal['PPC', 'SEO', 'Both']
+    amount_inr: float
+    amount_ppc: Optional[float] = None
+    amount_seo: Optional[float] = None
+    authorised_signatory: str
+    signatory_designation: str
+    gst: str
+    poc_name: str
+    poc_email: EmailStr
+    poc_designation: str
+    poc_mobile: str
+    approver_user_id: str
+    sign_status: Literal['Signed', 'Not signed'] = 'Not signed'
+    client_status: Literal['Active', 'Churned'] = 'Active'
+    agreement_status: Literal['Live', 'Expired'] = 'Live'
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ClientCreate(BaseModel):
+    client_name: str
+    address: str
+    start_date: str
+    tenure_months: int
+    currency_preference: Literal['USD', 'INR'] = 'INR'
+    service: Literal['PPC', 'SEO', 'Both']
+    amount_inr: float
+    amount_ppc: Optional[float] = None
+    amount_seo: Optional[float] = None
+    authorised_signatory: str
+    signatory_designation: str
+    gst: str
+    poc_name: str
+    poc_email: EmailStr
+    poc_designation: str
+    poc_mobile: str
+    approver_user_id: str
+
+class Contractor(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"contractor_{uuid.uuid4().hex[:8]}")
+    name: str
+    doj: str
+    start_date: str
+    tenure_months: int
+    end_date: str = ""
+    dob: str
+    pan: str
+    aadhar: str
+    mobile: str
+    personal_email: EmailStr
+    bank_name: str
+    account_holder: str
+    account_no: str
+    ifsc: str
+    address_1: str
+    pincode: str
+    city: str
+    address_2: Optional[str] = None
+    department: Literal['PPC', 'SEO', 'Content', 'Business Development', 'Others']
+    monthly_retainer_inr: float
+    designation: str
+    approver_user_id: str
+    sign_status: Literal['Signed', 'Not signed'] = 'Not signed'
+    status: Literal['Active', 'Terminated'] = 'Active'
+    agreement_status: Literal['Live', 'Expired'] = 'Live'
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ContractorCreate(BaseModel):
+    name: str
+    doj: str
+    start_date: str
+    tenure_months: int
+    dob: str
+    pan: str
+    aadhar: str
+    mobile: str
+    personal_email: EmailStr
+    bank_name: str
+    account_holder: str
+    account_no: str
+    ifsc: str
+    address_1: str
+    pincode: str
+    city: str
+    address_2: Optional[str] = None
+    department: Literal['PPC', 'SEO', 'Content', 'Business Development', 'Others']
+    monthly_retainer_inr: float
+    designation: str
+    approver_user_id: str
+
+class Employee(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"emp_{uuid.uuid4().hex[:8]}")
+    doj: str
+    work_email: EmailStr
+    emp_id: str
+    first_name: str
+    last_name: str
+    father_name: str
+    dob: str
+    mobile: str
+    personal_email: EmailStr
+    pan: str
+    aadhar: str
+    uan: str
+    pf_account_no: str
+    bank_name: str
+    account_no: str
+    ifsc: str
+    branch: str
+    address: str
+    pincode: str
+    city: str
+    monthly_gross_inr: float
+    department: Literal['PPC', 'SEO', 'Content', 'Business Development', 'Others']
+    approver_user_id: str
+    status: Literal['Active', 'Terminated'] = 'Active'
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class EmployeeCreate(BaseModel):
+    doj: str
+    work_email: EmailStr
+    emp_id: str
+    first_name: str
+    last_name: str
+    father_name: str
+    dob: str
+    mobile: str
+    personal_email: EmailStr
+    pan: str
+    aadhar: str
+    uan: str
+    pf_account_no: str
+    bank_name: str
+    account_no: str
+    ifsc: str
+    branch: str
+    address: str
+    pincode: str
+    city: str
+    monthly_gross_inr: float
+    department: Literal['PPC', 'SEO', 'Content', 'Business Development', 'Others']
+    approver_user_id: str
+
+class Approval(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"appr_{uuid.uuid4().hex[:8]}")
+    item_type: Literal['client', 'contractor', 'employee']
+    item_id: str
+    requested_by: str
+    status: Literal['Requested', 'Approved', 'Rejected'] = 'Requested'
+    approved_by: Optional[str] = None
+    approved_at: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ApprovalAction(BaseModel):
+    action: Literal['approve', 'reject']
+    notes: Optional[str] = None
+
+class SLAGenerateRequest(BaseModel):
+    client_name: str
+    address: str
+    start_date: str
+    tenure_months: int
+    currency_preference: Literal['USD', 'INR']
+    service: Literal['PPC', 'SEO', 'Both']
+    amount_ppc: Optional[float] = None
+    amount_seo: Optional[float] = None
+    amount: Optional[float] = None
+    authorised_signatory: str
+    designation: str
+
+class NDAGenerateRequest(BaseModel):
+    client_name: str
+    address: str
+    start_date: str
+    authorised_signatory: str
+    designation: str
+
+class ICAGenerateRequest(BaseModel):
+    contractor_name: str
+    address: str
+    start_date: str
+    tenure_months: int
+    amount_inr: float
+    designation: str
+
+class OfferLetterGenerateRequest(BaseModel):
+    employee_name: str
+    date: str
+    gross_salary_lpa: float
+    sign_before_date: str
+    position: str
+    department: str
+
+# ============= HELPER FUNCTIONS =============
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+def create_token(user_id: str, email: str, role: str) -> str:
+    payload = {
+        'user_id': user_id,
+        'email': email,
+        'role': role,
+        'exp': datetime.now(timezone.utc) + timedelta(hours=24)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+def calculate_end_date(start_date: str, tenure_months: int) -> str:
+    from dateutil.relativedelta import relativedelta
+    start = datetime.fromisoformat(start_date)
+    end = start + relativedelta(months=tenure_months)
+    return end.isoformat()[:10]
+
+def check_agreement_status(end_date: str) -> str:
+    end = datetime.fromisoformat(end_date)
+    today = datetime.now(timezone.utc)
+    return 'Live' if today <= end else 'Expired'
+
+# ============= AUTH ROUTES =============
+
+@api_router.post("/auth/login")
+async def login(request: LoginRequest):
+    user = await db.users.find_one({"email": request.email})
+    if not user or not verify_password(request.password, user.get('password_hash', '')):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Generate OTP (for MVP, we'll use a simple 6-digit code)
+    otp = str(random.randint(100000, 999999))
+    await db.otps.update_one(
+        {"email": request.email},
+        {"$set": {"otp": otp, "created_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {
+        "message": "OTP sent to email",
+        "email": request.email,
+        "otp": otp,  # For MVP, returning OTP (in production, send via email)
+        "requires_verification": not user.get('otp_verified', False)
+    }
+
+@api_router.post("/auth/verify-otp")
+async def verify_otp(request: OTPVerifyRequest):
+    otp_record = await db.otps.find_one({"email": request.email})
+    if not otp_record or otp_record['otp'] != request.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    
+    user = await db.users.find_one({"email": request.email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Mark user as verified
+    await db.users.update_one(
+        {"email": request.email},
+        {"$set": {"otp_verified": True}}
+    )
+    
+    # Generate JWT token
+    token = create_token(user['id'], user['email'], user['role'])
+    
+    return {
+        "token": token,
+        "user": {
+            "id": user['id'],
+            "name": user['name'],
+            "email": user['email'],
+            "role": user['role']
+        }
+    }
+
+@api_router.get("/auth/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    user = await db.users.find_one({"id": current_user['user_id']}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+# ============= USER ROUTES =============
+
+@api_router.get("/users", response_model=List[User])
+async def get_users(current_user: dict = Depends(get_current_user)):
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    return users
+
+@api_router.post("/users", response_model=User)
+async def create_user(user_data: UserCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'Admin':
+        raise HTTPException(status_code=403, detail="Only Admin can create users")
+    
+    # Check if user exists
+    existing = await db.users.find_one({"email": user_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="User already exists")
+    
+    user = User(
+        name=user_data.name,
+        email=user_data.email,
+        mobile=user_data.mobile,
+        role=user_data.role,
+        password_hash=hash_password(user_data.password),
+        status='Active'
+    )
+    
+    doc = user.model_dump()
+    await db.users.insert_one(doc)
+    return user
+
+@api_router.patch("/users/{user_id}")
+async def update_user(user_id: str, role: str = None, status: str = None, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'Admin':
+        raise HTTPException(status_code=403, detail="Only Admin can update users")
+    
+    update_data = {}
+    if role:
+        update_data['role'] = role
+    if status:
+        update_data['status'] = status
+    
+    await db.users.update_one({"id": user_id}, {"$set": update_data})
+    return {"message": "User updated successfully"}
+
+# ============= CLIENT ROUTES =============
+
+@api_router.get("/clients", response_model=List[Client])
+async def get_clients(current_user: dict = Depends(get_current_user)):
+    clients = await db.clients.find({}, {"_id": 0}).to_list(1000)
+    return clients
+
+@api_router.post("/clients", response_model=Client)
+async def create_client(client_data: ClientCreate, current_user: dict = Depends(get_current_user)):
+    client = Client(**client_data.model_dump())
+    client.end_date = calculate_end_date(client.start_date, client.tenure_months)
+    client.agreement_status = check_agreement_status(client.end_date)
+    
+    doc = client.model_dump()
+    await db.clients.insert_one(doc)
+    return client
+
+@api_router.patch("/clients/{client_id}")
+async def update_client(client_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    await db.clients.update_one({"id": client_id}, {"$set": update_data})
+    return {"message": "Client updated successfully"}
+
+@api_router.post("/clients/generate-sla")
+async def generate_sla(request: SLAGenerateRequest):
+    doc = Document()
+    
+    # Add title
+    title = doc.add_paragraph()
+    title.add_run('SERVICE LEVEL AGREEMENT').bold = True
+    title.alignment = 1  # Center
+    
+    doc.add_paragraph(f"Client Name: {request.client_name}")
+    doc.add_paragraph(f"Address: {request.address}")
+    doc.add_paragraph(f"Start Date: {request.start_date}")
+    doc.add_paragraph(f"Tenure: {request.tenure_months} months")
+    doc.add_paragraph(f"Service: {request.service}")
+    
+    if request.service == 'Both':
+        doc.add_paragraph(f"PPC Amount: {request.currency_preference} {request.amount_ppc}")
+        doc.add_paragraph(f"SEO Amount: {request.currency_preference} {request.amount_seo}")
+    else:
+        doc.add_paragraph(f"Amount: {request.currency_preference} {request.amount}")
+    
+    doc.add_paragraph(f"Authorised Signatory: {request.authorised_signatory}")
+    doc.add_paragraph(f"Designation: {request.designation}")
+    
+    # Save to BytesIO
+    bio = BytesIO()
+    doc.save(bio)
+    bio.seek(0)
+    
+    return Response(
+        content=bio.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="SLA_{request.client_name}.docx"'}
+    )
+
+@api_router.post("/clients/generate-nda")
+async def generate_nda(request: NDAGenerateRequest):
+    doc = Document()
+    
+    title = doc.add_paragraph()
+    title.add_run('NON-DISCLOSURE AGREEMENT').bold = True
+    title.alignment = 1
+    
+    doc.add_paragraph(f"Client Name: {request.client_name}")
+    doc.add_paragraph(f"Address: {request.address}")
+    doc.add_paragraph(f"Start Date: {request.start_date}")
+    doc.add_paragraph(f"Authorised Signatory: {request.authorised_signatory}")
+    doc.add_paragraph(f"Designation: {request.designation}")
+    
+    bio = BytesIO()
+    doc.save(bio)
+    bio.seek(0)
+    
+    return Response(
+        content=bio.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="NDA_{request.client_name}.docx"'}
+    )
+
+# ============= CONTRACTOR ROUTES =============
+
+@api_router.get("/contractors", response_model=List[Contractor])
+async def get_contractors(current_user: dict = Depends(get_current_user)):
+    contractors = await db.contractors.find({}, {"_id": 0}).to_list(1000)
+    return contractors
+
+@api_router.post("/contractors", response_model=Contractor)
+async def create_contractor(contractor_data: ContractorCreate, current_user: dict = Depends(get_current_user)):
+    contractor = Contractor(**contractor_data.model_dump())
+    contractor.end_date = calculate_end_date(contractor.start_date, contractor.tenure_months)
+    contractor.agreement_status = check_agreement_status(contractor.end_date)
+    
+    doc = contractor.model_dump()
+    await db.contractors.insert_one(doc)
+    return contractor
+
+@api_router.patch("/contractors/{contractor_id}")
+async def update_contractor(contractor_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    await db.contractors.update_one({"id": contractor_id}, {"$set": update_data})
+    return {"message": "Contractor updated successfully"}
+
+@api_router.post("/contractors/generate-ica")
+async def generate_ica(request: ICAGenerateRequest):
+    doc = Document()
+    
+    title = doc.add_paragraph()
+    title.add_run('INDEPENDENT CONTRACTOR AGREEMENT').bold = True
+    title.alignment = 1
+    
+    doc.add_paragraph(f"Contractor Name: {request.contractor_name}")
+    doc.add_paragraph(f"Address: {request.address}")
+    doc.add_paragraph(f"Start Date: {request.start_date}")
+    doc.add_paragraph(f"Tenure: {request.tenure_months} months")
+    doc.add_paragraph(f"Amount: INR {request.amount_inr}")
+    doc.add_paragraph(f"Designation: {request.designation}")
+    
+    bio = BytesIO()
+    doc.save(bio)
+    bio.seek(0)
+    
+    return Response(
+        content=bio.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="ICA_{request.contractor_name}.docx"'}
+    )
+
+# ============= EMPLOYEE ROUTES =============
+
+@api_router.get("/employees", response_model=List[Employee])
+async def get_employees(current_user: dict = Depends(get_current_user)):
+    employees = await db.employees.find({}, {"_id": 0}).to_list(1000)
+    return employees
+
+@api_router.post("/employees", response_model=Employee)
+async def create_employee(employee_data: EmployeeCreate, current_user: dict = Depends(get_current_user)):
+    employee = Employee(**employee_data.model_dump())
+    
+    doc = employee.model_dump()
+    await db.employees.insert_one(doc)
+    return employee
+
+@api_router.patch("/employees/{employee_id}")
+async def update_employee(employee_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    await db.employees.update_one({"id": employee_id}, {"$set": update_data})
+    return {"message": "Employee updated successfully"}
+
+@api_router.post("/employees/generate-offer")
+async def generate_offer_letter(request: OfferLetterGenerateRequest):
+    doc = Document()
+    
+    title = doc.add_paragraph()
+    title.add_run('OFFER LETTER').bold = True
+    title.alignment = 1
+    
+    doc.add_paragraph(f"Date: {request.date}")
+    doc.add_paragraph(f"\nDear {request.employee_name},")
+    doc.add_paragraph(f"\nPosition: {request.position}")
+    doc.add_paragraph(f"Department: {request.department}")
+    doc.add_paragraph(f"Gross Salary: INR {request.gross_salary_lpa} LPA")
+    
+    # Calculate CTC
+    gross_annual = request.gross_salary_lpa * 100000
+    ctc_annual = gross_annual + 21600
+    monthly_ctc = ctc_annual / 12
+    
+    doc.add_paragraph(f"\nAnnual CTC: INR {ctc_annual:,.2f}")
+    doc.add_paragraph(f"Monthly CTC: INR {monthly_ctc:,.2f}")
+    doc.add_paragraph(f"\nPlease sign before: {request.sign_before_date}")
+    
+    bio = BytesIO()
+    doc.save(bio)
+    bio.seek(0)
+    
+    return Response(
+        content=bio.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="Offer_{request.employee_name}.docx"'}
+    )
+
+# ============= APPROVAL ROUTES =============
+
+@api_router.get("/approvals", response_model=List[Approval])
+async def get_approvals(current_user: dict = Depends(get_current_user)):
+    approvals = await db.approvals.find({}, {"_id": 0}).to_list(1000)
+    return approvals
+
+@api_router.post("/approvals/{item_type}/{item_id}/request")
+async def request_approval(item_type: str, item_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] == 'Director':
+        raise HTTPException(status_code=403, detail="Directors cannot request approval")
+    
+    approval = Approval(
+        item_type=item_type,
+        item_id=item_id,
+        requested_by=current_user['user_id'],
+        status='Requested'
+    )
+    
+    doc = approval.model_dump()
+    await db.approvals.insert_one(doc)
+    return approval
+
+@api_router.post("/approvals/{approval_id}/action")
+async def approval_action(approval_id: str, action: ApprovalAction, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'Director':
+        raise HTTPException(status_code=403, detail="Only Directors can approve/reject")
+    
+    status = 'Approved' if action.action == 'approve' else 'Rejected'
+    
+    await db.approvals.update_one(
+        {"id": approval_id},
+        {"$set": {
+            "status": status,
+            "approved_by": current_user['user_id'],
+            "approved_at": datetime.now(timezone.utc).isoformat(),
+            "notes": action.notes
+        }}
+    )
+    
+    return {"message": f"Approval {status.lower()} successfully"}
+
+# ============= DASHBOARD ROUTES =============
+
+@api_router.get("/dashboard/summary")
+async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
+    # Get alerts
+    today = datetime.now(timezone.utc)
+    thirty_days = (today + timedelta(days=30)).isoformat()[:10]
+    fifteen_days = (today + timedelta(days=15)).isoformat()[:10]
+    
+    # Expiring agreements
+    expiring_clients = await db.clients.find({
+        "end_date": {"$lte": thirty_days, "$gte": today.isoformat()[:10]},
+        "client_status": "Active"
+    }).to_list(100)
+    
+    # Upcoming birthdays
+    employees = await db.employees.find({"status": "Active"}).to_list(1000)
+    contractors = await db.contractors.find({"status": "Active"}).to_list(1000)
+    
+    upcoming_birthdays = []
+    for emp in employees:
+        if emp.get('dob'):
+            upcoming_birthdays.append({"name": f"{emp['first_name']} {emp['last_name']}", "date": emp['dob'], "type": "Employee"})
+    for con in contractors:
+        if con.get('dob'):
+            upcoming_birthdays.append({"name": con['name'], "date": con['dob'], "type": "Contractor"})
+    
+    # Revenue metrics
+    clients = await db.clients.find({"client_status": "Active"}).to_list(1000)
+    revenue_by_dept = {}
+    for dept in ['PPC', 'SEO', 'Content', 'Business Development', 'Others']:
+        dept_clients = [c for c in clients if c.get('service') == dept or (c.get('service') == 'Both' and dept in ['PPC', 'SEO'])]
+        count = len(dept_clients)
+        amount = sum(c.get('amount_inr', 0) for c in dept_clients)
+        revenue_by_dept[dept] = {"count": count, "amount": amount}
+    
+    # Employee metrics
+    employee_by_dept = {}
+    for dept in ['PPC', 'SEO', 'Content', 'Business Development', 'Others']:
+        dept_employees = [e for e in employees if e.get('department') == dept]
+        count = len(dept_employees)
+        cost = sum(e.get('monthly_gross_inr', 0) for e in dept_employees)
+        employee_by_dept[dept] = {"count": count, "cost": cost}
+    
+    # Contractor metrics
+    contractor_by_dept = {}
+    for dept in ['PPC', 'SEO', 'Content', 'Business Development', 'Others']:
+        dept_contractors = [c for c in contractors if c.get('department') == dept]
+        count = len(dept_contractors)
+        cost = sum(c.get('monthly_retainer_inr', 0) for c in dept_contractors)
+        contractor_by_dept[dept] = {"count": count, "cost": cost}
+    
+    return {
+        "alerts": {
+            "expiring_agreements": len(expiring_clients),
+            "upcoming_birthdays": len(upcoming_birthdays)
+        },
+        "revenue": revenue_by_dept,
+        "employees": employee_by_dept,
+        "contractors": contractor_by_dept
+    }
+
+app.include_router(api_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup():
+    # Create seed admin user
+    existing = await db.users.find_one({"email": "Vishnu@onedotfinance.com"})
+    if not existing:
+        admin = User(
+            name="Vishnu Admin",
+            email="Vishnu@onedotfinance.com",
+            role="Admin",
+            password_hash=hash_password("12345678"),
+            status="Active",
+            otp_verified=False
+        )
+        await db.users.insert_one(admin.model_dump())
+        logger.info("Admin user created")
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
