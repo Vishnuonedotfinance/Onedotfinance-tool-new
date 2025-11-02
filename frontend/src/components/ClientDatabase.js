@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { api } from '../App';
 import { toast } from 'sonner';
 import { Plus, Edit, Download } from 'lucide-react';
+import FilterSort from './FilterSort';
 
 export default function ClientDatabase({ user }) {
   const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [sortBy, setSortBy] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [formData, setFormData] = useState({
     client_name: '',
     address: '',
