@@ -664,56 +664,57 @@ async def update_contractor(contractor_id: str, update_data: dict, current_user:
 
 @api_router.post("/contractors/generate-ica")
 async def generate_ica(request: ICAGenerateRequest):
-    try:
-        template_path = ROOT_DIR / 'templates' / 'ICA_Sample.docx'
-        output_path = f"/tmp/ICA_{request.contractor_name}_{uuid.uuid4().hex[:6]}.docx"
-        shutil.copy(template_path, output_path)
-        
-        merge_data = {
-            'contractor_name': request.contractor_name,
-            'address': request.address,
-            'start_date': request.start_date,
-            'tenure_months': str(request.tenure_months),
-            'amount_inr': str(request.amount_inr),
-            'designation': request.designation,
-        }
-        
-        document = MailMerge(output_path)
-        document.merge(**merge_data)
-        document.write(output_path)
-        
-        with open(output_path, 'rb') as f:
-            content = f.read()
-        
-        return Response(
-            content=content,
-            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            headers={'Content-Disposition': f'attachment; filename="ICA_{request.contractor_name}.docx"'}
-        )
-    except Exception as e:
-        logger.error(f"ICA generation error: {str(e)}")
-        doc = Document()
-        
-        title = doc.add_paragraph()
-        title.add_run('INDEPENDENT CONTRACTOR AGREEMENT').bold = True
-        title.alignment = 1
-        
-        doc.add_paragraph(f"Contractor Name: {request.contractor_name}")
-        doc.add_paragraph(f"Address: {request.address}")
-        doc.add_paragraph(f"Start Date: {request.start_date}")
-        doc.add_paragraph(f"Tenure: {request.tenure_months} months")
-        doc.add_paragraph(f"Amount: INR {request.amount_inr}")
-        doc.add_paragraph(f"Designation: {request.designation}")
-        
-        bio = BytesIO()
-        doc.save(bio)
-        bio.seek(0)
-        
-        return Response(
-            content=bio.getvalue(),
-            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            headers={'Content-Disposition': f'attachment; filename="ICA_{request.contractor_name}.docx"'}
-        )
+    # Generate simple ICA document
+    doc = Document()
+    
+    # Header
+    header = doc.sections[0].header
+    header_para = header.paragraphs[0]
+    header_para.text = "PIPEROCKET"
+    header_para.style.font.size = Pt(16)
+    header_para.style.font.bold = True
+    
+    # Title
+    title = doc.add_paragraph()
+    title_run = title.add_run('INDEPENDENT CONTRACTOR AGREEMENT')
+    title_run.bold = True
+    title_run.font.size = Pt(18)
+    title.alignment = 1
+    
+    doc.add_paragraph()
+    
+    doc.add_paragraph(f"This Independent Contractor Agreement is entered into on {request.start_date}")
+    doc.add_paragraph()
+    
+    doc.add_paragraph(f"Contractor Name: {request.contractor_name}")
+    doc.add_paragraph(f"Address: {request.address}")
+    doc.add_paragraph(f"Designation: {request.designation}")
+    doc.add_paragraph(f"Monthly Retainer: INR {request.amount_inr:,.2f}")
+    doc.add_paragraph(f"Contract Period: {request.tenure_months} months")
+    doc.add_paragraph()
+    
+    doc.add_paragraph("Terms and Conditions:")
+    doc.add_paragraph("1. The Contractor agrees to provide services as per the scope of work.")
+    doc.add_paragraph("2. Payment shall be made on a monthly basis.")
+    doc.add_paragraph("3. This agreement can be terminated by either party with 30 days notice.")
+    doc.add_paragraph()
+    
+    # Signature section
+    doc.add_paragraph("Contractor Signature:")
+    doc.add_paragraph()
+    doc.add_paragraph(f"Name: {request.contractor_name}")
+    doc.add_paragraph(f"Date: ________________")
+    doc.add_paragraph(f"Signature: ________________")
+    
+    bio = BytesIO()
+    doc.save(bio)
+    bio.seek(0)
+    
+    return Response(
+        content=bio.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="ICA_{request.contractor_name.replace(" ", "_")}.docx"'}
+    )
 
 # ============= EMPLOYEE ROUTES =============
 
