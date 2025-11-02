@@ -848,53 +848,74 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
     # Get alerts
     today = datetime.now(timezone.utc)
     thirty_days_later = today + timedelta(days=30)
-    fifteen_days_later = today + timedelta(days=15)
     
     # Expiring agreements - get actual client names
     clients_all = await db.clients.find({"client_status": "Active"}).to_list(1000)
     expiring_clients = []
     for client in clients_all:
         if client.get('end_date'):
-            end_date = datetime.fromisoformat(client['end_date'])
-            if today.date() <= end_date.date() <= thirty_days_later.date():
-                expiring_clients.append({
-                    "name": client['client_name'],
-                    "end_date": client['end_date'],
-                    "service": client['service']
-                })
+            try:
+                end_date = datetime.fromisoformat(client['end_date'])
+                # Remove timezone for comparison
+                if hasattr(end_date, 'date'):
+                    end_date_only = end_date.date()
+                else:
+                    end_date_only = end_date
+                
+                if today.date() <= end_date_only <= thirty_days_later.date():
+                    expiring_clients.append({
+                        "name": client['client_name'],
+                        "end_date": client['end_date'],
+                        "service": client['service']
+                    })
+            except:
+                pass
     
     # Upcoming birthdays - get employee and contractor names
     employees = await db.employees.find({"status": "Active"}).to_list(1000)
     contractors = await db.contractors.find({"status": "Active"}).to_list(1000)
     
     upcoming_birthdays = []
-    current_month = today.month
-    current_day = today.day
     
     for emp in employees:
         if emp.get('dob'):
-            dob = datetime.fromisoformat(emp['dob'])
-            # Check if birthday is within 15 days
-            days_until = (datetime(today.year, dob.month, dob.day) - today).days
-            if 0 <= days_until <= 15:
-                upcoming_birthdays.append({
-                    "name": f"{emp['first_name']} {emp['last_name']}",
-                    "date": emp['dob'],
-                    "type": "Employee",
-                    "department": emp.get('department', '')
-                })
+            try:
+                dob = datetime.fromisoformat(emp['dob'])
+                # Calculate days until birthday this year
+                this_year_bday = datetime(today.year, dob.month, dob.day)
+                if this_year_bday < datetime.now():
+                    # Birthday already passed this year, check next year
+                    this_year_bday = datetime(today.year + 1, dob.month, dob.day)
+                
+                days_until = (this_year_bday - datetime.now()).days
+                if 0 <= days_until <= 15:
+                    upcoming_birthdays.append({
+                        "name": f"{emp['first_name']} {emp['last_name']}",
+                        "date": emp['dob'],
+                        "type": "Employee",
+                        "department": emp.get('department', '')
+                    })
+            except:
+                pass
     
     for con in contractors:
         if con.get('dob'):
-            dob = datetime.fromisoformat(con['dob'])
-            days_until = (datetime(today.year, dob.month, dob.day) - today).days
-            if 0 <= days_until <= 15:
-                upcoming_birthdays.append({
-                    "name": con['name'],
-                    "date": con['dob'],
-                    "type": "Contractor",
-                    "department": con.get('department', '')
-                })
+            try:
+                dob = datetime.fromisoformat(con['dob'])
+                this_year_bday = datetime(today.year, dob.month, dob.day)
+                if this_year_bday < datetime.now():
+                    this_year_bday = datetime(today.year + 1, dob.month, dob.day)
+                
+                days_until = (this_year_bday - datetime.now()).days
+                if 0 <= days_until <= 15:
+                    upcoming_birthdays.append({
+                        "name": con['name'],
+                        "date": con['dob'],
+                        "type": "Contractor",
+                        "department": con.get('department', '')
+                    })
+            except:
+                pass
     
     # Sort birthdays by date
     upcoming_birthdays.sort(key=lambda x: datetime.fromisoformat(x['date']))
