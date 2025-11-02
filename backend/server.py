@@ -707,26 +707,57 @@ async def approval_action(approval_id: str, action: ApprovalAction, current_user
 async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
     # Get alerts
     today = datetime.now(timezone.utc)
-    thirty_days = (today + timedelta(days=30)).isoformat()[:10]
-    fifteen_days = (today + timedelta(days=15)).isoformat()[:10]
+    thirty_days_later = today + timedelta(days=30)
+    fifteen_days_later = today + timedelta(days=15)
     
-    # Expiring agreements
-    expiring_clients = await db.clients.find({
-        "end_date": {"$lte": thirty_days, "$gte": today.isoformat()[:10]},
-        "client_status": "Active"
-    }).to_list(100)
+    # Expiring agreements - get actual client names
+    clients_all = await db.clients.find({"client_status": "Active"}).to_list(1000)
+    expiring_clients = []
+    for client in clients_all:
+        if client.get('end_date'):
+            end_date = datetime.fromisoformat(client['end_date'])
+            if today.date() <= end_date.date() <= thirty_days_later.date():
+                expiring_clients.append({
+                    "name": client['client_name'],
+                    "end_date": client['end_date'],
+                    "service": client['service']
+                })
     
-    # Upcoming birthdays
+    # Upcoming birthdays - get employee and contractor names
     employees = await db.employees.find({"status": "Active"}).to_list(1000)
     contractors = await db.contractors.find({"status": "Active"}).to_list(1000)
     
     upcoming_birthdays = []
+    current_month = today.month
+    current_day = today.day
+    
     for emp in employees:
         if emp.get('dob'):
-            upcoming_birthdays.append({"name": f"{emp['first_name']} {emp['last_name']}", "date": emp['dob'], "type": "Employee"})
+            dob = datetime.fromisoformat(emp['dob'])
+            # Check if birthday is within 15 days
+            days_until = (datetime(today.year, dob.month, dob.day) - today).days
+            if 0 <= days_until <= 15:
+                upcoming_birthdays.append({
+                    "name": f"{emp['first_name']} {emp['last_name']}",
+                    "date": emp['dob'],
+                    "type": "Employee",
+                    "department": emp.get('department', '')
+                })
+    
     for con in contractors:
         if con.get('dob'):
-            upcoming_birthdays.append({"name": con['name'], "date": con['dob'], "type": "Contractor"})
+            dob = datetime.fromisoformat(con['dob'])
+            days_until = (datetime(today.year, dob.month, dob.day) - today).days
+            if 0 <= days_until <= 15:
+                upcoming_birthdays.append({
+                    "name": con['name'],
+                    "date": con['dob'],
+                    "type": "Contractor",
+                    "department": con.get('department', '')
+                })
+    
+    # Sort birthdays by date
+    upcoming_birthdays.sort(key=lambda x: datetime.fromisoformat(x['date']))
     
     # Revenue metrics
     clients = await db.clients.find({"client_status": "Active"}).to_list(1000)
@@ -755,8 +786,8 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
     
     return {
         "alerts": {
-            "expiring_agreements": len(expiring_clients),
-            "upcoming_birthdays": len(upcoming_birthdays)
+            "expiring_agreements": expiring_clients,
+            "upcoming_birthdays": upcoming_birthdays
         },
         "revenue": revenue_by_dept,
         "employees": employee_by_dept,
