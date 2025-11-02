@@ -224,15 +224,19 @@ class Approval(BaseModel):
     item_type: Literal['client', 'contractor', 'employee']
     item_id: str
     requested_by: str
-    status: Literal['Requested', 'Approved', 'Rejected'] = 'Requested'
+    status: Literal['Requested', 'Approved', 'Rejected', 'Hold'] = 'Requested'
     approved_by: Optional[str] = None
     approved_at: Optional[str] = None
     notes: Optional[str] = None
+    staff_remarks: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class ApprovalAction(BaseModel):
-    action: Literal['approve', 'reject']
+    action: Literal['approve', 'reject', 'hold']
     notes: Optional[str] = None
+
+class ApprovalRequest(BaseModel):
+    staff_remarks: Optional[str] = None
 
 class SLAGenerateRequest(BaseModel):
     client_name: str
