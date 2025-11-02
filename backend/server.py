@@ -575,54 +575,52 @@ async def generate_sla(request: SLAGenerateRequest):
 
 @api_router.post("/clients/generate-nda")
 async def generate_nda(request: NDAGenerateRequest):
-    try:
-        template_path = ROOT_DIR / 'templates' / 'NDA_Sample.docx'
-        output_path = f"/tmp/NDA_{request.client_name}_{uuid.uuid4().hex[:6]}.docx"
-        shutil.copy(template_path, output_path)
-        
-        merge_data = {
-            'client_name': request.client_name,
-            'address': request.address,
-            'start_date': request.start_date,
-            'authorised_signatory': request.authorised_signatory,
-            'designation': request.designation,
-        }
-        
-        document = MailMerge(output_path)
-        document.merge(**merge_data)
-        document.write(output_path)
-        
-        with open(output_path, 'rb') as f:
-            content = f.read()
-        
-        return Response(
-            content=content,
-            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            headers={'Content-Disposition': f'attachment; filename="NDA_{request.client_name}.docx"'}
-        )
-    except Exception as e:
-        logger.error(f"NDA generation error: {str(e)}")
-        doc = Document()
-        
-        title = doc.add_paragraph()
-        title.add_run('NON-DISCLOSURE AGREEMENT').bold = True
-        title.alignment = 1
-        
-        doc.add_paragraph(f"Client Name: {request.client_name}")
-        doc.add_paragraph(f"Address: {request.address}")
-        doc.add_paragraph(f"Start Date: {request.start_date}")
-        doc.add_paragraph(f"Authorised Signatory: {request.authorised_signatory}")
-        doc.add_paragraph(f"Designation: {request.designation}")
-        
-        bio = BytesIO()
-        doc.save(bio)
-        bio.seek(0)
-        
-        return Response(
-            content=bio.getvalue(),
-            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            headers={'Content-Disposition': f'attachment; filename="NDA_{request.client_name}.docx"'}
-        )
+    # Generate simple NDA document
+    doc = Document()
+    
+    # Header
+    header = doc.sections[0].header
+    header_para = header.paragraphs[0]
+    header_para.text = "PIPEROCKET"
+    header_para.style.font.size = Pt(16)
+    header_para.style.font.bold = True
+    
+    # Title
+    title = doc.add_paragraph()
+    title_run = title.add_run('NON-DISCLOSURE AGREEMENT')
+    title_run.bold = True
+    title_run.font.size = Pt(18)
+    title.alignment = 1
+    
+    doc.add_paragraph()
+    
+    doc.add_paragraph(f"This Non-Disclosure Agreement (\"NDA\") is entered into on {request.start_date}")
+    doc.add_paragraph()
+    
+    doc.add_paragraph(f"Client Name: {request.client_name}")
+    doc.add_paragraph(f"Address: {request.address}")
+    doc.add_paragraph()
+    
+    doc.add_paragraph("This agreement governs the disclosure of confidential information between the parties.")
+    doc.add_paragraph()
+    
+    # Signature section
+    doc.add_paragraph("For and on behalf of the Client:")
+    doc.add_paragraph()
+    doc.add_paragraph(f"Name: {request.authorised_signatory}")
+    doc.add_paragraph(f"Designation: {request.designation}")
+    doc.add_paragraph(f"Date: ________________")
+    doc.add_paragraph(f"Signature: ________________")
+    
+    bio = BytesIO()
+    doc.save(bio)
+    bio.seek(0)
+    
+    return Response(
+        content=bio.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="NDA_{request.client_name.replace(" ", "_")}.docx"'}
+    )
 
 # ============= CONTRACTOR ROUTES =============
 
