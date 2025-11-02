@@ -73,6 +73,8 @@ export default function Approval({ user }) {
         notes: remarks 
       });
       toast.success(`Approval ${actionType === 'approve' ? 'approved' : actionType === 'reject' ? 'rejected' : 'held'}`);
+      setShowRemarkModal(false);
+      setRemarks('');
       loadData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to process approval');
