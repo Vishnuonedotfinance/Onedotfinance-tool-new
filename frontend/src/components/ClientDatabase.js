@@ -253,7 +253,7 @@ export default function ClientDatabase({ user }) {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} data-testid="add-client-modal">
             <div className="modal-header">
-              <h2>Add New Client</h2>
+              <h2>{editMode ? 'Edit Client' : 'Add New Client'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>&times;</button>
             </div>
             <form onSubmit={handleSubmit}>
