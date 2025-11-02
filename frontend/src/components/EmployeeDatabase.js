@@ -126,14 +126,32 @@ export default function EmployeeDatabase({ user }) {
       <div className="table-container">
         <div className="table-header">
           <h2>Employee Database</h2>
-          <button
-            className="btn-success"
-            onClick={() => setShowModal(true)}
-            data-testid="add-employee-button"
-          >
-            <Plus size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
-            Add Employee
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <FilterSort
+              onSortChange={setSortBy}
+              onFilterChange={setFilterStatus}
+              sortOptions={[
+                { value: 'first_name_asc', label: 'Name (A-Z)' },
+                { value: 'first_name_desc', label: 'Name (Z-A)' },
+                { value: 'doj_desc', label: 'Date (Newest)' },
+                { value: 'doj_asc', label: 'Date (Oldest)' }
+              ]}
+              filterOptions={[
+                { value: 'Active', label: 'Active' },
+                { value: 'Terminated', label: 'Terminated' }
+              ]}
+              currentSort={sortBy}
+              currentFilter={filterStatus}
+            />
+            <button
+              className="btn-success"
+              onClick={() => setShowModal(true)}
+              data-testid="add-employee-button"
+            >
+              <Plus size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Add Employee
+            </button>
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
