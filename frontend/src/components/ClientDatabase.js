@@ -411,7 +411,7 @@ export default function ClientDatabase({ user }) {
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary" data-testid="save-client-button">
-                  Save Client
+                  {editMode ? 'Update Client' : 'Save Client'}
                 </button>
               </div>
             </form>
