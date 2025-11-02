@@ -425,8 +425,26 @@ async def update_user(user_id: str, role: str = None, status: str = None, curren
 # ============= CLIENT ROUTES =============
 
 @api_router.get("/clients", response_model=List[Client])
-async def get_clients(current_user: dict = Depends(get_current_user)):
-    clients = await db.clients.find({}, {"_id": 0}).to_list(1000)
+async def get_clients(
+    current_user: dict = Depends(get_current_user),
+    sort_by: str = None,
+    sort_order: str = 'asc',
+    filter_status: str = None,
+    filter_department: str = None
+):
+    query = {}
+    if filter_status:
+        query['client_status'] = filter_status
+    if filter_department:
+        query['service'] = filter_department
+    
+    clients = await db.clients.find(query, {"_id": 0}).to_list(1000)
+    
+    # Sorting
+    if sort_by:
+        reverse = sort_order == 'desc'
+        clients.sort(key=lambda x: x.get(sort_by, ''), reverse=reverse)
+    
     return clients
 
 @api_router.post("/clients", response_model=Client)
