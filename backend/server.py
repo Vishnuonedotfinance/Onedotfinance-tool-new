@@ -589,8 +589,26 @@ async def generate_ica(request: ICAGenerateRequest):
 # ============= EMPLOYEE ROUTES =============
 
 @api_router.get("/employees", response_model=List[Employee])
-async def get_employees(current_user: dict = Depends(get_current_user)):
-    employees = await db.employees.find({}, {"_id": 0}).to_list(1000)
+async def get_employees(
+    current_user: dict = Depends(get_current_user),
+    sort_by: str = None,
+    sort_order: str = 'asc',
+    filter_status: str = None,
+    filter_department: str = None
+):
+    query = {}
+    if filter_status:
+        query['status'] = filter_status
+    if filter_department:
+        query['department'] = filter_department
+    
+    employees = await db.employees.find(query, {"_id": 0}).to_list(1000)
+    
+    # Sorting
+    if sort_by:
+        reverse = sort_order == 'desc'
+        employees.sort(key=lambda x: x.get(sort_by, ''), reverse=reverse)
+    
     return employees
 
 @api_router.post("/employees", response_model=Employee)
