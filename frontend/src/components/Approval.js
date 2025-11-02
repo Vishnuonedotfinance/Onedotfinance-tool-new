@@ -40,19 +40,39 @@ export default function Approval({ user }) {
   };
 
   const handleRequestApproval = async (itemType, itemId) => {
+    setSelectedItem({ itemType, itemId });
+    setRemarkType('request');
+    setShowRemarkModal(true);
+  };
+
+  const submitRequestApproval = async () => {
     try {
-      await api.post(`/approvals/${itemType}/${itemId}/request`);
+      await api.post(`/approvals/${selectedItem.itemType}/${selectedItem.itemId}/request`, {
+        staff_remarks: remarks
+      });
       toast.success('Approval requested');
+      setShowRemarkModal(false);
+      setRemarks('');
       loadData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to request approval');
     }
   };
 
-  const handleApprovalAction = async (approvalId, action, notes = '') => {
+  const handleApprovalAction = async (approvalId, action) => {
+    setSelectedItem({ approvalId });
+    setActionType(action);
+    setRemarkType('action');
+    setShowRemarkModal(true);
+  };
+
+  const submitApprovalAction = async () => {
     try {
-      await api.post(`/approvals/${approvalId}/action`, { action, notes });
-      toast.success(`Approval ${action === 'approve' ? 'approved' : 'rejected'}`);
+      await api.post(`/approvals/${selectedItem.approvalId}/action`, { 
+        action: actionType, 
+        notes: remarks 
+      });
+      toast.success(`Approval ${actionType === 'approve' ? 'approved' : actionType === 'reject' ? 'rejected' : 'held'}`);
       loadData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to process approval');
