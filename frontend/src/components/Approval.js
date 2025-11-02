@@ -149,14 +149,25 @@ export default function Approval({ user }) {
                             onClick={() => handleApprovalAction(approval.id, 'approve')}
                             style={{ color: '#10b981' }}
                             data-testid={`approve-client-${client.id}`}
+                            title="Approve"
                           >
                             <CheckCircle size={20} />
+                          </button>
+                          <button
+                            className="btn-icon"
+                            onClick={() => handleApprovalAction(approval.id, 'hold')}
+                            style={{ color: '#f59e0b' }}
+                            data-testid={`hold-client-${client.id}`}
+                            title="Hold"
+                          >
+                            <PauseCircle size={20} />
                           </button>
                           <button
                             className="btn-icon"
                             onClick={() => handleApprovalAction(approval.id, 'reject')}
                             style={{ color: '#dc2626' }}
                             data-testid={`reject-client-${client.id}`}
+                            title="Reject"
                           >
                             <XCircle size={20} />
                           </button>
