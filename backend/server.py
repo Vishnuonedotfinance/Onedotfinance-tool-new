@@ -841,6 +841,15 @@ async def approval_action(approval_id: str, action: ApprovalAction, current_user
     
     return {"message": f"Approval {status.lower()} successfully"}
 
+@api_router.delete("/approvals/reset")
+async def reset_approvals(current_user: dict = Depends(get_current_user)):
+    """Reset all approval records - accessible by Staff and Admin"""
+    if current_user['role'] == 'Director':
+        raise HTTPException(status_code=403, detail="Directors cannot reset approvals")
+    
+    result = await db.approvals.delete_many({})
+    return {"message": f"Reset complete. Deleted {result.deleted_count} approval records"}
+
 # ============= DASHBOARD ROUTES =============
 
 @api_router.get("/dashboard/summary")
