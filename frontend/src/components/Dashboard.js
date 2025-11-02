@@ -37,13 +37,37 @@ export default function Dashboard() {
       <div className="alerts-section">
         <div className="alert-card" data-testid="alert-expiring-agreements">
           <AlertTriangle size={24} style={{ marginBottom: '0.5rem' }} />
-          <h3>Agreements Expiring Soon</h3>
-          <p>{data.alerts.expiring_agreements}</p>
+          <h3>Agreements Expiring Soon (30 days)</h3>
+          <p>{data.alerts.expiring_agreements.length}</p>
+          {data.alerts.expiring_agreements.length > 0 && (
+            <div style={{ marginTop: '1rem', fontSize: '0.875rem' }}>
+              {data.alerts.expiring_agreements.map((client, idx) => (
+                <div key={idx} style={{ padding: '0.5rem 0', borderBottom: '1px solid #fbbf24' }}>
+                  <div style={{ fontWeight: '600' }}>{client.name}</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                    {client.service} - Expires: {client.end_date}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="alert-card" data-testid="alert-upcoming-birthdays">
           <AlertTriangle size={24} style={{ marginBottom: '0.5rem' }} />
           <h3>Upcoming Birthdays (15 days)</h3>
-          <p>{data.alerts.upcoming_birthdays}</p>
+          <p>{data.alerts.upcoming_birthdays.length}</p>
+          {data.alerts.upcoming_birthdays.length > 0 && (
+            <div style={{ marginTop: '1rem', fontSize: '0.875rem' }}>
+              {data.alerts.upcoming_birthdays.map((person, idx) => (
+                <div key={idx} style={{ padding: '0.5rem 0', borderBottom: '1px solid #fbbf24' }}>
+                  <div style={{ fontWeight: '600' }}>{person.name}</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                    {person.type} - {person.department} - {new Date(person.date).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
