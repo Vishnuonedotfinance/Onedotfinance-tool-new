@@ -756,71 +756,85 @@ async def update_employee(employee_id: str, update_data: dict, current_user: dic
 
 @api_router.post("/employees/generate-offer")
 async def generate_offer_letter(request: OfferLetterGenerateRequest):
-    try:
-        template_path = ROOT_DIR / 'templates' / 'Offer_Letter_Sample.docx'
-        output_path = f"/tmp/Offer_{request.employee_name}_{uuid.uuid4().hex[:6]}.docx"
-        shutil.copy(template_path, output_path)
-        
-        # Calculate CTC
-        gross_annual = request.gross_salary_lpa * 100000
-        ctc_annual = gross_annual + 21600
-        monthly_ctc = ctc_annual / 12
-        
-        merge_data = {
-            'employee_name': request.employee_name,
-            'date': request.date,
-            'position': request.position,
-            'department': request.department,
-            'gross_salary_lpa': str(request.gross_salary_lpa),
-            'gross_annual': f"{gross_annual:,.2f}",
-            'ctc_annual': f"{ctc_annual:,.2f}",
-            'monthly_ctc': f"{monthly_ctc:,.2f}",
-            'sign_before_date': request.sign_before_date,
-        }
-        
-        document = MailMerge(output_path)
-        document.merge(**merge_data)
-        document.write(output_path)
-        
-        with open(output_path, 'rb') as f:
-            content = f.read()
-        
-        return Response(
-            content=content,
-            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            headers={'Content-Disposition': f'attachment; filename="Offer_{request.employee_name}.docx"'}
-        )
-    except Exception as e:
-        logger.error(f"Offer Letter generation error: {str(e)}")
-        doc = Document()
-        
-        title = doc.add_paragraph()
-        title.add_run('OFFER LETTER').bold = True
-        title.alignment = 1
-        
-        doc.add_paragraph(f"Date: {request.date}")
-        doc.add_paragraph(f"\\nDear {request.employee_name},")
-        doc.add_paragraph(f"\\nPosition: {request.position}")
-        doc.add_paragraph(f"Department: {request.department}")
-        doc.add_paragraph(f"Gross Salary: INR {request.gross_salary_lpa} LPA")
-        
-        gross_annual = request.gross_salary_lpa * 100000
-        ctc_annual = gross_annual + 21600
-        monthly_ctc = ctc_annual / 12
-        
-        doc.add_paragraph(f"\\nAnnual CTC: INR {ctc_annual:,.2f}")
-        doc.add_paragraph(f"Monthly CTC: INR {monthly_ctc:,.2f}")
-        doc.add_paragraph(f"\\nPlease sign before: {request.sign_before_date}")
-        
-        bio = BytesIO()
-        doc.save(bio)
-        bio.seek(0)
-        
-        return Response(
-            content=bio.getvalue(),
-            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            headers={'Content-Disposition': f'attachment; filename="Offer_{request.employee_name}.docx"'}
-        )
+    # Calculate CTC
+    gross_annual = request.gross_salary_lpa * 100000
+    ctc_annual = gross_annual + 21600
+    monthly_ctc = ctc_annual / 12
+    monthly_gross = gross_annual / 12
+    
+    # Generate offer letter document
+    doc = Document()
+    
+    # Header
+    header = doc.sections[0].header
+    header_para = header.paragraphs[0]
+    header_para.text = "PIPEROCKET"
+    header_para.style.font.size = Pt(16)
+    header_para.style.font.bold = True
+    
+    # Title
+    title = doc.add_paragraph()
+    title_run = title.add_run('OFFER LETTER')
+    title_run.bold = True
+    title_run.font.size = Pt(18)
+    title.alignment = 1
+    
+    doc.add_paragraph()
+    doc.add_paragraph(f"Date: {request.date}")
+    doc.add_paragraph()
+    
+    doc.add_paragraph(f"Dear {request.employee_name},")
+    doc.add_paragraph()
+    
+    doc.add_paragraph(f"We are pleased to offer you the position of {request.position} in the {request.department} department.")
+    doc.add_paragraph()
+    
+    doc.add_paragraph("Compensation Details:")
+    doc.add_paragraph(f"• Gross Annual Salary: INR {gross_annual:,.2f}")
+    doc.add_paragraph(f"• Cost to Company (Annual): INR {ctc_annual:,.2f}")
+    doc.add_paragraph(f"• Monthly CTC: INR {monthly_ctc:,.2f}")
+    doc.add_paragraph(f"• Monthly Gross: INR {monthly_gross:,.2f}")
+    doc.add_paragraph()
+    
+    # Salary breakdown table
+    doc.add_paragraph("Monthly Salary Breakdown:")
+    
+    # Calculate components
+    basic = monthly_gross * 0.50
+    hra = monthly_gross * 0.30
+    special = monthly_gross * 0.20
+    
+    doc.add_paragraph(f"• Basic Salary: INR {basic:,.2f}")
+    doc.add_paragraph(f"• HRA: INR {hra:,.2f}")
+    doc.add_paragraph(f"• Special Allowance: INR {special:,.2f}")
+    doc.add_paragraph(f"• Employer PF Contribution: INR 1,800.00")
+    doc.add_paragraph()
+    
+    doc.add_paragraph(f"Please sign and return this offer letter before {request.sign_before_date}.")
+    doc.add_paragraph()
+    
+    doc.add_paragraph("We look forward to welcoming you to our team!")
+    doc.add_paragraph()
+    doc.add_paragraph("Sincerely,")
+    doc.add_paragraph("Piperocket HR Team")
+    doc.add_paragraph()
+    doc.add_paragraph()
+    
+    doc.add_paragraph("Employee Acceptance:")
+    doc.add_paragraph()
+    doc.add_paragraph(f"Name: {request.employee_name}")
+    doc.add_paragraph(f"Date: ________________")
+    doc.add_paragraph(f"Signature: ________________")
+    
+    bio = BytesIO()
+    doc.save(bio)
+    bio.seek(0)
+    
+    return Response(
+        content=bio.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename="Offer_{request.employee_name.replace(" ", "_")}.docx"'}
+    )
 
 # ============= APPROVAL ROUTES =============
 
