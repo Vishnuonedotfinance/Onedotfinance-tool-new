@@ -466,38 +466,86 @@ async def update_client(client_id: str, update_data: dict, current_user: dict = 
 
 @api_router.post("/clients/generate-sla")
 async def generate_sla(request: SLAGenerateRequest):
-    doc = Document()
-    
-    # Add title
-    title = doc.add_paragraph()
-    title.add_run('SERVICE LEVEL AGREEMENT').bold = True
-    title.alignment = 1  # Center
-    
-    doc.add_paragraph(f"Client Name: {request.client_name}")
-    doc.add_paragraph(f"Address: {request.address}")
-    doc.add_paragraph(f"Start Date: {request.start_date}")
-    doc.add_paragraph(f"Tenure: {request.tenure_months} months")
-    doc.add_paragraph(f"Service: {request.service}")
-    
-    if request.service == 'Both':
-        doc.add_paragraph(f"PPC Amount: {request.currency_preference} {request.amount_ppc}")
-        doc.add_paragraph(f"SEO Amount: {request.currency_preference} {request.amount_seo}")
-    else:
-        doc.add_paragraph(f"Amount: {request.currency_preference} {request.amount}")
-    
-    doc.add_paragraph(f"Authorised Signatory: {request.authorised_signatory}")
-    doc.add_paragraph(f"Designation: {request.designation}")
-    
-    # Save to BytesIO
-    bio = BytesIO()
-    doc.save(bio)
-    bio.seek(0)
-    
-    return Response(
-        content=bio.getvalue(),
-        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        headers={'Content-Disposition': f'attachment; filename="SLA_{request.client_name}.docx"'}
-    )
+    try:
+        # Select template based on service
+        if request.service == 'PPC':
+            template_path = ROOT_DIR / 'templates' / 'SLA_PPC.docx'
+        elif request.service == 'SEO':
+            template_path = ROOT_DIR / 'templates' / 'SLA_SEO.docx'
+        else:
+            # For Both, use PPC template as base
+            template_path = ROOT_DIR / 'templates' / 'SLA_PPC.docx'
+        
+        # Create a copy for merging
+        output_path = f"/tmp/SLA_{request.client_name}_{uuid.uuid4().hex[:6]}.docx"
+        shutil.copy(template_path, output_path)
+        
+        # Prepare merge fields
+        merge_data = {
+            'client_name': request.client_name,
+            'address': request.address,
+            'start_date': request.start_date,
+            'tenure_months': str(request.tenure_months),
+            'service': request.service,
+            'currency': request.currency_preference,
+            'authorised_signatory': request.authorised_signatory,
+            'designation': request.designation,
+        }
+        
+        # Add amount fields
+        if request.service == 'Both':
+            merge_data['amount_ppc'] = str(request.amount_ppc) if request.amount_ppc else '0'
+            merge_data['amount_seo'] = str(request.amount_seo) if request.amount_seo else '0'
+            merge_data['amount'] = str((request.amount_ppc or 0) + (request.amount_seo or 0))
+        else:
+            merge_data['amount'] = str(request.amount) if request.amount else '0'
+        
+        # Perform mail merge
+        document = MailMerge(output_path)
+        document.merge(**merge_data)
+        document.write(output_path)
+        
+        # Read and return file
+        with open(output_path, 'rb') as f:
+            content = f.read()
+        
+        return Response(
+            content=content,
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            headers={'Content-Disposition': f'attachment; filename="SLA_{request.client_name}.docx"'}
+        )
+    except Exception as e:
+        logger.error(f"SLA generation error: {str(e)}")
+        # Fallback to simple document
+        doc = Document()
+        title = doc.add_paragraph()
+        title.add_run('SERVICE LEVEL AGREEMENT').bold = True
+        title.alignment = 1
+        
+        doc.add_paragraph(f"Client Name: {request.client_name}")
+        doc.add_paragraph(f"Address: {request.address}")
+        doc.add_paragraph(f"Start Date: {request.start_date}")
+        doc.add_paragraph(f"Tenure: {request.tenure_months} months")
+        doc.add_paragraph(f"Service: {request.service}")
+        
+        if request.service == 'Both':
+            doc.add_paragraph(f"PPC Amount: {request.currency_preference} {request.amount_ppc}")
+            doc.add_paragraph(f"SEO Amount: {request.currency_preference} {request.amount_seo}")
+        else:
+            doc.add_paragraph(f"Amount: {request.currency_preference} {request.amount}")
+        
+        doc.add_paragraph(f"Authorised Signatory: {request.authorised_signatory}")
+        doc.add_paragraph(f"Designation: {request.designation}")
+        
+        bio = BytesIO()
+        doc.save(bio)
+        bio.seek(0)
+        
+        return Response(
+            content=bio.getvalue(),
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            headers={'Content-Disposition': f'attachment; filename="SLA_{request.client_name}.docx"'}
+        )
 
 @api_router.post("/clients/generate-nda")
 async def generate_nda(request: NDAGenerateRequest):
