@@ -124,14 +124,32 @@ export default function ContractorDatabase({ user }) {
       <div className="table-container">
         <div className="table-header">
           <h2>Contractor Database</h2>
-          <button
-            className="btn-success"
-            onClick={() => setShowModal(true)}
-            data-testid="add-contractor-button"
-          >
-            <Plus size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
-            Add Contractor
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <FilterSort
+              onSortChange={setSortBy}
+              onFilterChange={setFilterStatus}
+              sortOptions={[
+                { value: 'name_asc', label: 'Name (A-Z)' },
+                { value: 'name_desc', label: 'Name (Z-A)' },
+                { value: 'doj_desc', label: 'Date (Newest)' },
+                { value: 'doj_asc', label: 'Date (Oldest)' }
+              ]}
+              filterOptions={[
+                { value: 'Active', label: 'Active' },
+                { value: 'Terminated', label: 'Terminated' }
+              ]}
+              currentSort={sortBy}
+              currentFilter={filterStatus}
+            />
+            <button
+              className="btn-success"
+              onClick={() => setShowModal(true)}
+              data-testid="add-contractor-button"
+            >
+              <Plus size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Add Contractor
+            </button>
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
