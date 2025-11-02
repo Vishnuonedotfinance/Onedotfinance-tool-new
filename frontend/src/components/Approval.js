@@ -124,6 +124,7 @@ export default function Approval({ user }) {
                         <span className={`status-badge ${
                           approval.status === 'Approved' ? 'status-active' :
                           approval.status === 'Rejected' ? 'status-inactive' :
+                          approval.status === 'Hold' ? 'status-pending' :
                           'status-pending'
                         }`}>
                           {approval.status}
@@ -211,6 +212,7 @@ export default function Approval({ user }) {
                         <span className={`status-badge ${
                           approval.status === 'Approved' ? 'status-active' :
                           approval.status === 'Rejected' ? 'status-inactive' :
+                          approval.status === 'Hold' ? 'status-pending' :
                           'status-pending'
                         }`}>
                           {approval.status}
@@ -298,6 +300,7 @@ export default function Approval({ user }) {
                         <span className={`status-badge ${
                           approval.status === 'Approved' ? 'status-active' :
                           approval.status === 'Rejected' ? 'status-inactive' :
+                          approval.status === 'Hold' ? 'status-pending' :
                           'status-pending'
                         }`}>
                           {approval.status}
