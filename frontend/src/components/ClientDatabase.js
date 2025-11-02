@@ -34,7 +34,7 @@ export default function ClientDatabase({ user }) {
   useEffect(() => {
     loadClients();
     loadUsers();
-  }, []);
+  }, [sortBy, filterStatus]);
 
   const loadClients = async () => {
     try {
