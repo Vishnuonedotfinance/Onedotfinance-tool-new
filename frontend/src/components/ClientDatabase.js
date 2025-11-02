@@ -116,14 +116,32 @@ export default function ClientDatabase({ user }) {
       <div className="table-container">
         <div className="table-header">
           <h2>Client Database</h2>
-          <button
-            className="btn-success"
-            onClick={() => setShowModal(true)}
-            data-testid="add-client-button"
-          >
-            <Plus size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
-            Add Client
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <FilterSort
+              onSortChange={setSortBy}
+              onFilterChange={setFilterStatus}
+              sortOptions={[
+                { value: 'client_name_asc', label: 'Name (A-Z)' },
+                { value: 'client_name_desc', label: 'Name (Z-A)' },
+                { value: 'start_date_desc', label: 'Date (Newest)' },
+                { value: 'start_date_asc', label: 'Date (Oldest)' }
+              ]}
+              filterOptions={[
+                { value: 'Active', label: 'Active' },
+                { value: 'Churned', label: 'Churned' }
+              ]}
+              currentSort={sortBy}
+              currentFilter={filterStatus}
+            />
+            <button
+              className="btn-success"
+              onClick={() => setShowModal(true)}
+              data-testid="add-client-button"
+            >
+              <Plus size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Add Client
+            </button>
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
