@@ -38,7 +38,13 @@ export default function ClientDatabase({ user }) {
 
   const loadClients = async () => {
     try {
-      const response = await api.get('/clients');
+      let url = '/clients';
+      const params = [];
+      if (sortBy) params.push(`sort_by=${sortBy.split('_')[0]}&sort_order=${sortBy.split('_')[1] || 'asc'}`);
+      if (filterStatus) params.push(`filter_status=${filterStatus}`);
+      if (params.length > 0) url += '?' + params.join('&');
+      
+      const response = await api.get(url);
       setClients(response.data);
     } catch (error) {
       toast.error('Failed to load clients');
