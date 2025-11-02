@@ -684,9 +684,10 @@ async def request_approval(item_type: str, item_id: str, request: ApprovalReques
 @api_router.post("/approvals/{approval_id}/action")
 async def approval_action(approval_id: str, action: ApprovalAction, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'Director':
-        raise HTTPException(status_code=403, detail="Only Directors can approve/reject")
+        raise HTTPException(status_code=403, detail="Only Directors can approve/reject/hold")
     
-    status = 'Approved' if action.action == 'approve' else 'Rejected'
+    status_map = {'approve': 'Approved', 'reject': 'Rejected', 'hold': 'Hold'}
+    status = status_map.get(action.action, 'Requested')
     
     await db.approvals.update_one(
         {"id": approval_id},
