@@ -305,8 +305,10 @@ def calculate_end_date(start_date: str, tenure_months: int) -> str:
 
 def check_agreement_status(end_date: str) -> str:
     end = datetime.fromisoformat(end_date)
-    today = datetime.now(timezone.utc)
-    return 'Live' if today <= end else 'Expired'
+    # Remove timezone info for comparison
+    today = datetime.now().date()
+    end_date_only = end.date() if hasattr(end, 'date') else end
+    return 'Live' if today <= end_date_only else 'Expired'
 
 # ============= AUTH ROUTES =============
 
