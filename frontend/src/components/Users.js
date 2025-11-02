@@ -94,6 +94,8 @@ export default function Users({ user }) {
                     value={u.role}
                     onChange={(e) => handleUpdateRole(u.id, e.target.value)}
                     data-testid={`role-select-${u.id}`}
+                    disabled={u.role === 'Admin'}
+                    style={{ cursor: u.role === 'Admin' ? 'not-allowed' : 'pointer', opacity: u.role === 'Admin' ? 0.6 : 1 }}
                   >
                     <option value="Admin">Admin</option>
                     <option value="Director">Director</option>
