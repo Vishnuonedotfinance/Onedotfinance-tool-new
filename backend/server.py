@@ -15,7 +15,9 @@ import bcrypt
 from io import BytesIO
 from docx import Document
 from docx.shared import Pt, RGBColor
+from mailmerge import MailMerge
 import random
+import shutil
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
