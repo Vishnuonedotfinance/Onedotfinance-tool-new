@@ -108,6 +108,18 @@ export default function Approval({ user }) {
         <p>Manage approval requests for clients, contractors, and employees</p>
       </div>
 
+      {canReset && (
+        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            className="btn-danger"
+            onClick={handleResetApprovals}
+            data-testid="reset-approvals-button"
+          >
+            Reset All Approvals
+          </button>
+        </div>
+      )}
+
       {/* Client Items */}
       <div className="table-container" style={{ marginBottom: '2rem' }}>
         <div className="table-header">
