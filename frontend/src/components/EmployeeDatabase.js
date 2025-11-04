@@ -174,6 +174,65 @@ export default function EmployeeDatabase({ user }) {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const response = await api.get('/employees/export', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'employees_export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Employees exported successfully');
+    } catch (error) {
+      toast.error('Failed to export employees');
+    }
+  };
+
+  const handleDownloadSample = async () => {
+    try {
+      const response = await api.get('/employees/sample', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'employee_sample.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Sample template downloaded');
+    } catch (error) {
+      toast.error('Failed to download sample');
+    }
+  };
+
+  const handleImport = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await api.post('/employees/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      toast.success(response.data.message);
+      if (response.data.errors && response.data.errors.length > 0) {
+        console.log('Import errors:', response.data.errors);
+        toast.warning(`${response.data.errors.length} rows had errors. Check console for details.`);
+      }
+      loadEmployees();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to import employees');
+    }
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div data-testid="employee-database">
       <div className="table-container">
