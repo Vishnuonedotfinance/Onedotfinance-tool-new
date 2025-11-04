@@ -157,6 +157,18 @@ export default function ContractorDatabase({ user }) {
     }
   };
 
+  const handleDelete = async (contractorId, contractorName) => {
+    if (window.confirm(`Are you sure you want to delete contractor "${contractorName}"? This action cannot be undone.`)) {
+      try {
+        await api.delete(`/contractors/${contractorId}`);
+        toast.success('Contractor deleted successfully');
+        loadContractors();
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to delete contractor');
+      }
+    }
+  };
+
   return (
     <div data-testid="contractor-database">
       <div className="table-container">
