@@ -464,6 +464,18 @@ async def update_client(client_id: str, update_data: dict, current_user: dict = 
     await db.clients.update_one({"id": client_id}, {"$set": update_data})
     return {"message": "Client updated successfully"}
 
+@api_router.delete("/clients/{client_id}")
+async def delete_client(client_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a client - Admin and Director only"""
+    if current_user['role'] not in ['Admin', 'Director']:
+        raise HTTPException(status_code=403, detail="Only Admin and Director can delete clients")
+    
+    result = await db.clients.delete_one({"id": client_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    return {"message": "Client deleted successfully"}
+
 @api_router.post("/clients/generate-sla")
 async def generate_sla(request: SLAGenerateRequest):
     try:
