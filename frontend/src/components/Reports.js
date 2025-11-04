@@ -327,6 +327,9 @@ export default function Reports() {
                       <td style={{ color: row.profit >= 0 ? '#10b981' : '#ef4444', fontWeight: '600' }}>
                         ₹{row.profit.toFixed(0)}
                       </td>
+                      <td style={{ color: row.profitPercent >= 0 ? '#10b981' : '#ef4444', fontWeight: '600' }}>
+                        {row.profitPercent}%
+                      </td>
                     </tr>
                   ))}
                 </tbody>
