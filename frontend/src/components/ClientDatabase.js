@@ -415,7 +415,8 @@ export default function ClientDatabase({ user }) {
                     >
                       <option value="PPC">PPC</option>
                       <option value="SEO">SEO</option>
-                      <option value="Both">Both</option>
+                      <option value="Content">Content</option>
+                      <option value="Backlink">Backlink</option>
                     </select>
                   </div>
                   <div className="form-group">
