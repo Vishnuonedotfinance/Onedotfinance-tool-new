@@ -234,7 +234,7 @@ export default function ContractorDatabase({ user }) {
       <div className="table-container">
         <div className="table-header">
           <h2>Contractor Database</h2>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <FilterSort
               onSortChange={setSortBy}
               onFilterChange={setFilterStatus}
@@ -251,6 +251,40 @@ export default function ContractorDatabase({ user }) {
               currentSort={sortBy}
               currentFilter={filterStatus}
             />
+            <button
+              className="btn-secondary"
+              onClick={handleDownloadSample}
+              data-testid="download-sample-button"
+              title="Download Sample Template"
+            >
+              <FileDown size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Sample
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => fileInputRef.current?.click()}
+              data-testid="import-contractors-button"
+              title="Import from Excel"
+            >
+              <Upload size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Import
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleImport}
+              style={{ display: 'none' }}
+            />
+            <button
+              className="btn-secondary"
+              onClick={handleExport}
+              data-testid="export-contractors-button"
+              title="Export to Excel"
+            >
+              <Download size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Export
+            </button>
             <button
               className="btn-success"
               onClick={() => { setEditMode(false); setShowModal(true); }}
