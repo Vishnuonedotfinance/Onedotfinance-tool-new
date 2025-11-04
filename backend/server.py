@@ -1171,16 +1171,21 @@ async def get_client_sample():
     ws = wb.active
     ws.title = "Clients"
     
-    # Headers
+    # Headers with bold formatting
     headers = ['client_name', 'address', 'start_date', 'tenure_months', 'currency_preference', 
                'service', 'amount_inr', 'authorised_signatory', 'signatory_designation', 
                'gst', 'poc_name', 'poc_email', 'poc_designation', 'poc_mobile', 'approver_user_id']
     
-    ws.append(headers)
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
     
-    # Sample row
+    # Sample rows
     ws.append(['ABC Corp', '123 Main St', '2025-01-01', 12, 'INR', 'PPC', 50000, 
                'John Doe', 'CEO', 'GST123', 'Jane Smith', 'jane@abc.com', 'Manager', '9876543210', 'user_id'])
+    ws.append(['XYZ Ltd', '456 Park Ave', '2025-02-01', 6, 'INR', 'SEO', 75000, 
+               'Mike Johnson', 'Director', 'GST456', 'Sarah Lee', 'sarah@xyz.com', 'Lead', '9876543211', 'user_id'])
     
     output = BytesIO()
     wb.save(output)
@@ -1190,6 +1195,101 @@ async def get_client_sample():
         content=output.getvalue(),
         media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         headers={'Content-Disposition': 'attachment; filename="client_sample.xlsx"'}
+    )
+
+@api_router.get("/contractors/sample")
+async def get_contractor_sample():
+    """Download sample Excel template for bulk upload"""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Contractors"
+    
+    headers = ['name', 'doj', 'start_date', 'tenure_months', 'dob', 'pan', 'aadhar', 
+               'mobile', 'personal_email', 'bank_name', 'account_holder', 'account_no', 
+               'ifsc', 'address_1', 'pincode', 'city', 'address_2', 'department', 
+               'monthly_retainer_inr', 'designation', 'approver_user_id']
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
+    
+    ws.append(['John Contractor', '2025-01-01', '2025-01-01', 6, '1990-05-15', 'ABCDE1234F', 
+               '123456789012', '9876543210', 'john@email.com', 'Bank Name', 'John Contractor', 
+               '1234567890', 'BANK0001234', '123 Street', '110001', 'Delhi', 'Near Market', 
+               'PPC', 35000, 'Consultant', 'user_id'])
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="contractor_sample.xlsx"'}
+    )
+
+@api_router.get("/employees/sample")
+async def get_employee_sample():
+    """Download sample Excel template for bulk upload"""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Employees"
+    
+    headers = ['doj', 'work_email', 'emp_id', 'first_name', 'last_name', 'father_name', 
+               'dob', 'mobile', 'personal_email', 'pan', 'aadhar', 'uan', 'pf_account_no', 
+               'bank_name', 'account_no', 'ifsc', 'branch', 'address', 'pincode', 'city', 
+               'monthly_gross_inr', 'department', 'approver_user_id']
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
+    
+    ws.append(['2025-01-15', 'john@company.com', 'EMP001', 'John', 'Doe', 'James Doe', 
+               '1995-03-20', '9876543210', 'john.personal@email.com', 'ABCDE1234F', 
+               '123456789012', 'UAN123456', 'PF123456', 'Bank Name', '1234567890', 
+               'BANK0001234', 'Main Branch', '123 Street', '110001', 'Delhi', 
+               60000, 'PPC', 'user_id'])
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="employee_sample.xlsx"'}
+    )
+
+@api_router.get("/assets/sample")
+async def get_asset_sample():
+    """Download sample Excel template for bulk upload"""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Assets"
+    
+    headers = ['asset_type', 'model', 'serial_number', 'purchase_date', 'vendor', 
+               'value_ex_gst', 'warranty_period_months', 'alloted_to', 'email', 'department']
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
+    
+    ws.append(['Laptop', 'Dell XPS 15', 'SN123456', '2024-01-15', 'Dell India', 
+               75000, 12, 'John Doe', 'john@company.com', 'PPC'])
+    ws.append(['Monitor', 'LG 27inch', 'SN789012', '2024-02-01', 'LG Store', 
+               15000, 24, 'Jane Smith', 'jane@company.com', 'SEO'])
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="asset_sample.xlsx"'}
     )
 
 @api_router.post("/clients/import")
