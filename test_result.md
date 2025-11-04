@@ -110,15 +110,18 @@ user_problem_statement: |
 backend:
   - task: "Asset Tracker CRUD operations"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py (lines 1525-1577)"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented GET, POST, PATCH, DELETE routes for assets with department filtering and warranty status calculation"
+      - working: true
+        agent: "testing"
+        comment: "✅ CRUD operations working correctly. Tested: CREATE asset (200), GET all assets (200), GET with department filter (200), UPDATE asset (200), DELETE asset (200 for Admin role). Warranty status calculation working correctly (Active/Expired based on purchase date + warranty period). Routes are at /api/assets/* not /api/org/{id}/assets/* as mentioned in review request."
 
   - task: "Asset Import/Export functionality"
     implemented: true
