@@ -346,7 +346,7 @@ class AssetTrackerTester:
                 response = unauth_session.get(f"{BASE_URL}{endpoint}")
                 self.log(f"Unauthorized access to {endpoint}: {response.status_code}")
                 
-                if response.status_code != 401:
+                if response.status_code not in [401, 403]:
                     self.log(f"Security issue: {endpoint} accessible without auth", "ERROR")
                     return False
                     
