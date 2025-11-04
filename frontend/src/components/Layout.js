@@ -130,6 +130,14 @@ export default function Layout({ children, user, onLogout }) {
             <Package /> Asset Tracker
           </Link>
 
+          <Link
+            to="/reports"
+            className={`nav-item ${location.pathname === '/reports' ? 'active' : ''}`}
+            data-testid="nav-reports"
+          >
+            <BarChart3 /> Reports
+          </Link>
+
           <a
             href="https://www.zoho.com/payroll/"
             target="_blank"
