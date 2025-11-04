@@ -13,6 +13,7 @@ export default function ContractorDatabase({ user }) {
   const [editId, setEditId] = useState(null);
   const [sortBy, setSortBy] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: '',
     doj: '',
