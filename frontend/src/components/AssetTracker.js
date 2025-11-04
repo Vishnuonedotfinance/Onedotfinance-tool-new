@@ -193,7 +193,62 @@ export default function AssetTracker() {
       <div className="table-container">
         <div className="table-header">
           <h2>Asset Master List</h2>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            {/* Department Filter */}
+            <select
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+              className="filter-select"
+              data-testid="department-filter"
+              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+            >
+              <option value="">All Departments</option>
+              <option value="PPC">PPC</option>
+              <option value="SEO">SEO</option>
+              <option value="Content">Content</option>
+              <option value="Business Development">Business Development</option>
+              <option value="Others">Others</option>
+            </select>
+
+            {/* Warranty Status Filter */}
+            <select
+              value={warrantyStatusFilter}
+              onChange={(e) => setWarrantyStatusFilter(e.target.value)}
+              className="filter-select"
+              data-testid="warranty-filter"
+              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+            >
+              <option value="">All Warranty Status</option>
+              <option value="Active">Active</option>
+              <option value="Expired">Expired</option>
+            </select>
+
+            <button
+              className="btn-secondary"
+              onClick={handleDownloadSample}
+              data-testid="download-sample-button"
+            >
+              <FileDown size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Download Sample
+            </button>
+
+            <button
+              className="btn-secondary"
+              onClick={() => fileInputRef.current?.click()}
+              data-testid="import-assets-button"
+            >
+              <Upload size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Import Excel
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImport}
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              data-testid="file-input"
+            />
+
             <button
               className="btn-secondary"
               onClick={handleExport}
