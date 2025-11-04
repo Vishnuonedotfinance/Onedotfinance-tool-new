@@ -125,6 +125,7 @@ class Contractor(BaseModel):
     tenure_months: int
     end_date: str = ""
     dob: str
+    gender: Literal['Male', 'Female', 'Other'] = 'Male'
     pan: str
     aadhar: str
     mobile: str
@@ -138,6 +139,7 @@ class Contractor(BaseModel):
     city: str
     address_2: Optional[str] = None
     department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
+    projects: List[str] = Field(default_factory=list)
     monthly_retainer_inr: float
     designation: str
     approver_user_id: str
