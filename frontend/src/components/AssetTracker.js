@@ -5,11 +5,14 @@ import { Plus, Edit, Trash2, Download, Upload, FileDown } from 'lucide-react';
 
 export default function AssetTracker() {
   const [assets, setAssets] = useState([]);
+  const [filteredAssets, setFilteredAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
   const fileInputRef = useRef(null);
+  const [departmentFilter, setDepartmentFilter] = useState('');
+  const [warrantyStatusFilter, setWarrantyStatusFilter] = useState('');
   const [formData, setFormData] = useState({
     asset_type: '',
     model: '',
@@ -27,6 +30,10 @@ export default function AssetTracker() {
     loadAssets();
   }, []);
 
+  useEffect(() => {
+    applyFilters();
+  }, [assets, departmentFilter, warrantyStatusFilter]);
+
   const loadAssets = async () => {
     try {
       const response = await api.get('/assets');
@@ -36,6 +43,20 @@ export default function AssetTracker() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...assets];
+
+    if (departmentFilter) {
+      filtered = filtered.filter(asset => asset.department === departmentFilter);
+    }
+
+    if (warrantyStatusFilter) {
+      filtered = filtered.filter(asset => asset.warranty_status === warrantyStatusFilter);
+    }
+
+    setFilteredAssets(filtered);
   };
 
   const handleSubmit = async (e) => {
