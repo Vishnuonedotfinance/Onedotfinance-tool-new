@@ -326,9 +326,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Asset Tracker CRUD operations"
-    - "Asset Import/Export functionality"
-    - "Asset Sample Template generation"
+    - "All new backend features tested and verified"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
