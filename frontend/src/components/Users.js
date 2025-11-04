@@ -129,6 +129,16 @@ export default function Users({ user }) {
                     <button className="btn-icon" data-testid={`edit-user-${u.id}`}>
                       <Edit size={16} />
                     </button>
+                    <button 
+                      className="btn-icon" 
+                      onClick={() => handleDelete(u.id, u.name, u.role)}
+                      data-testid={`delete-user-${u.id}`}
+                      style={{ color: u.role === 'Admin' ? '#9ca3af' : '#dc2626', cursor: u.role === 'Admin' ? 'not-allowed' : 'pointer' }}
+                      disabled={u.role === 'Admin'}
+                      title={u.role === 'Admin' ? 'Cannot delete Admin' : 'Delete user'}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </td>
               </tr>
