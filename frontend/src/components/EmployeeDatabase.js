@@ -121,6 +121,18 @@ export default function EmployeeDatabase({ user }) {
     }
   };
 
+  const handleDelete = async (employeeId, employeeName) => {
+    if (window.confirm(`Are you sure you want to delete employee "${employeeName}"? This action cannot be undone.`)) {
+      try {
+        await api.delete(`/employees/${employeeId}`);
+        toast.success('Employee deleted successfully');
+        loadEmployees();
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to delete employee');
+      }
+    }
+  };
+
   return (
     <div data-testid="employee-database">
       <div className="table-container">
