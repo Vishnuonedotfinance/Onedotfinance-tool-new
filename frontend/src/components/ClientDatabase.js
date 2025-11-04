@@ -50,7 +50,13 @@ export default function ClientDatabase({ user }) {
       if (params.length > 0) url += '?' + params.join('&');
       
       const response = await api.get(url);
-      setClients(response.data);
+      // Sort by status: Active first, then Churned
+      const sorted = response.data.sort((a, b) => {
+        if (a.client_status === 'Active' && b.client_status !== 'Active') return -1;
+        if (a.client_status !== 'Active' && b.client_status === 'Active') return 1;
+        return 0;
+      });
+      setClients(sorted);
     } catch (error) {
       toast.error('Failed to load clients');
     } finally {
