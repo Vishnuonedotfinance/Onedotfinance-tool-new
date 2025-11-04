@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Asset Tracker Backend API Testing Script
-Tests authentication, CRUD operations, import/export functionality
+Backend API Testing Script for New Features
+Tests authentication, user management, client service updates, contractor/employee new fields, dashboard enhancements
 """
 
 import requests
@@ -14,7 +14,7 @@ BASE_URL = "https://finmgmt-tool.preview.emergentagent.com/api"
 TEST_EMAIL = "Vishnu@onedotfinance.com"
 TEST_PASSWORD = "12345678"
 
-class AssetTrackerTester:
+class BackendTester:
     def __init__(self):
         self.token = None
         self.user_info = None
