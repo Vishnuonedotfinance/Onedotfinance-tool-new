@@ -88,6 +88,7 @@ function App() {
                     <Route path="/employees" element={<EmployeeDatabase user={user} />} />
                     <Route path="/employees/offer-letter-generator" element={<OfferLetterGenerator />} />
                     <Route path="/approval" element={<Approval user={user} />} />
+                    <Route path="/asset-tracker" element={<AssetTracker />} />
                   </Routes>
                 </Layout>
               ) : (
