@@ -260,11 +260,25 @@ export default function ContractorDatabase({ user }) {
                         className="btn-icon" 
                         onClick={() => handleEdit(contractor)}
                         data-testid={`edit-contractor-${contractor.id}`}
+                        title="Edit"
                       >
                         <Edit size={16} />
                       </button>
-                      <button className="btn-icon" data-testid={`download-contractor-${contractor.id}`}>
+                      <button 
+                        className="btn-icon" 
+                        data-testid={`download-contractor-${contractor.id}`}
+                        title="Download"
+                      >
                         <Download size={16} />
+                      </button>
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => handleDelete(contractor.id, contractor.name)}
+                        data-testid={`delete-contractor-${contractor.id}`}
+                        style={{ color: '#dc2626' }}
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
