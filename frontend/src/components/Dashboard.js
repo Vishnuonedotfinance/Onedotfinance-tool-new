@@ -69,6 +69,23 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        <div className="alert-card" data-testid="alert-expired-agreements" style={{ backgroundColor: '#fee2e2', borderColor: '#ef4444' }}>
+          <AlertTriangle size={24} style={{ marginBottom: '0.5rem', color: '#dc2626' }} />
+          <h3 style={{ color: '#991b1b' }}>Expired Agreements</h3>
+          <p style={{ color: '#991b1b' }}>{data.alerts.expired_agreements?.length || 0}</p>
+          {data.alerts.expired_agreements && data.alerts.expired_agreements.length > 0 && (
+            <div style={{ marginTop: '1rem', fontSize: '0.875rem' }}>
+              {data.alerts.expired_agreements.map((client, idx) => (
+                <div key={idx} style={{ padding: '0.5rem 0', borderBottom: '1px solid #fca5a5' }}>
+                  <div style={{ fontWeight: '600' }}>{client.name}</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                    {client.service} - Expired: {client.end_date}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Revenue Metrics */}
