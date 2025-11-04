@@ -114,13 +114,14 @@ export default function Reports() {
 
   // Resource Utilization
   const calculateResourceUtilization = () => {
-    const allResources = [];
+    let allResources = [];
 
     employees.forEach(emp => {
       const projectCount = emp.projects?.length || 0;
       allResources.push({
         name: emp.first_name + ' ' + emp.last_name,
         type: 'Employee',
+        department: emp.department,
         cost: emp.monthly_gross_inr || 0,
         projectCount,
         perClientCost: projectCount > 0 ? (emp.monthly_gross_inr || 0) / projectCount : 0
@@ -132,6 +133,7 @@ export default function Reports() {
       allResources.push({
         name: con.name,
         type: 'Contractor',
+        department: con.department,
         cost: con.monthly_retainer_inr || 0,
         projectCount,
         perClientCost: projectCount > 0 ? (con.monthly_retainer_inr || 0) / projectCount : 0
