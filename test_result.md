@@ -103,9 +103,14 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Complete implementation of Asset Tracker module with comprehensive import/export functionality 
-  and filtering options. All master databases (Clients, Contractors, Employees, Assets) should have 
-  department-wise and status-wise filters, along with bulk import/export in Excel format.
+  Major Feature Additions and Enhancements:
+  1. Add "Backlink" as new department across all modules
+  2. Add Gender and Projects (multi-select) fields to Contractors and Employees
+  3. Add department and status filters with totals to all databases
+  4. Dashboard: Show expired agreements and expand to 6 departments
+  5. Users: Add delete functionality
+  6. NEW: Reports module with Department P&L, Client Profitability, and Resource Utilization
+  7. Update Client service dropdown to PPC, SEO, Content, Backlink
 
 backend:
   - task: "Asset Tracker CRUD operations"
