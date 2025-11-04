@@ -1193,14 +1193,234 @@ async def get_client_sample():
     )
 
 @api_router.post("/clients/import")
-async def import_clients(file: bytes = None, current_user: dict = Depends(get_current_user)):
+async def import_clients(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
     """Bulk import clients from Excel"""
     if current_user['role'] not in ['Admin', 'Director']:
         raise HTTPException(status_code=403, detail="Only Admin and Director can bulk upload")
     
-    # This would process the uploaded Excel file
-    # Simplified version - actual implementation would parse the file
-    return {"message": "Bulk import feature - file upload handling to be implemented"}
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="Only Excel files (.xlsx, .xls) are supported")
+    
+    try:
+        contents = await file.read()
+        df = pd.read_excel(BytesIO(contents))
+        
+        imported_count = 0
+        errors = []
+        
+        for index, row in df.iterrows():
+            try:
+                # Create client object
+                client_data = ClientCreate(
+                    client_name=str(row['client_name']),
+                    address=str(row['address']),
+                    start_date=str(row['start_date'])[:10],
+                    tenure_months=int(row['tenure_months']),
+                    currency_preference=str(row.get('currency_preference', 'INR')),
+                    service=str(row['service']),
+                    amount_inr=float(row['amount_inr']),
+                    authorised_signatory=str(row['authorised_signatory']),
+                    signatory_designation=str(row['signatory_designation']),
+                    gst=str(row['gst']),
+                    poc_name=str(row['poc_name']),
+                    poc_email=str(row['poc_email']),
+                    poc_designation=str(row['poc_designation']),
+                    poc_mobile=str(row['poc_mobile']),
+                    approver_user_id=str(row['approver_user_id'])
+                )
+                
+                client = Client(**client_data.model_dump())
+                client.end_date = calculate_end_date(client.start_date, client.tenure_months)
+                client.agreement_status = check_agreement_status(client.end_date)
+                
+                await db.clients.insert_one(client.model_dump())
+                imported_count += 1
+                
+            except Exception as e:
+                errors.append(f"Row {index + 2}: {str(e)}")
+        
+        return {
+            "message": f"Import completed. {imported_count} clients imported successfully.",
+            "imported": imported_count,
+            "errors": errors if errors else None
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process file: {str(e)}")
+
+@api_router.post("/contractors/import")
+async def import_contractors(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Bulk import contractors from Excel"""
+    if current_user['role'] not in ['Admin', 'Director']:
+        raise HTTPException(status_code=403, detail="Only Admin and Director can bulk upload")
+    
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="Only Excel files (.xlsx, .xls) are supported")
+    
+    try:
+        contents = await file.read()
+        df = pd.read_excel(BytesIO(contents))
+        
+        imported_count = 0
+        errors = []
+        
+        for index, row in df.iterrows():
+            try:
+                contractor_data = ContractorCreate(
+                    name=str(row['name']),
+                    doj=str(row['doj'])[:10],
+                    start_date=str(row['start_date'])[:10],
+                    tenure_months=int(row['tenure_months']),
+                    dob=str(row['dob'])[:10],
+                    pan=str(row['pan']),
+                    aadhar=str(row['aadhar']),
+                    mobile=str(row['mobile']),
+                    personal_email=str(row['personal_email']),
+                    bank_name=str(row['bank_name']),
+                    account_holder=str(row['account_holder']),
+                    account_no=str(row['account_no']),
+                    ifsc=str(row['ifsc']),
+                    address_1=str(row['address_1']),
+                    pincode=str(row['pincode']),
+                    city=str(row['city']),
+                    address_2=str(row.get('address_2', '')),
+                    department=str(row['department']),
+                    monthly_retainer_inr=float(row['monthly_retainer_inr']),
+                    designation=str(row['designation']),
+                    approver_user_id=str(row['approver_user_id'])
+                )
+                
+                contractor = Contractor(**contractor_data.model_dump())
+                contractor.end_date = calculate_end_date(contractor.start_date, contractor.tenure_months)
+                contractor.agreement_status = check_agreement_status(contractor.end_date)
+                
+                await db.contractors.insert_one(contractor.model_dump())
+                imported_count += 1
+                
+            except Exception as e:
+                errors.append(f"Row {index + 2}: {str(e)}")
+        
+        return {
+            "message": f"Import completed. {imported_count} contractors imported successfully.",
+            "imported": imported_count,
+            "errors": errors if errors else None
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process file: {str(e)}")
+
+@api_router.post("/employees/import")
+async def import_employees(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Bulk import employees from Excel"""
+    if current_user['role'] not in ['Admin', 'Director']:
+        raise HTTPException(status_code=403, detail="Only Admin and Director can bulk upload")
+    
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="Only Excel files (.xlsx, .xls) are supported")
+    
+    try:
+        contents = await file.read()
+        df = pd.read_excel(BytesIO(contents))
+        
+        imported_count = 0
+        errors = []
+        
+        for index, row in df.iterrows():
+            try:
+                employee_data = EmployeeCreate(
+                    doj=str(row['doj'])[:10],
+                    work_email=str(row['work_email']),
+                    emp_id=str(row['emp_id']),
+                    first_name=str(row['first_name']),
+                    last_name=str(row['last_name']),
+                    father_name=str(row['father_name']),
+                    dob=str(row['dob'])[:10],
+                    mobile=str(row['mobile']),
+                    personal_email=str(row['personal_email']),
+                    pan=str(row['pan']),
+                    aadhar=str(row['aadhar']),
+                    uan=str(row['uan']),
+                    pf_account_no=str(row['pf_account_no']),
+                    bank_name=str(row['bank_name']),
+                    account_no=str(row['account_no']),
+                    ifsc=str(row['ifsc']),
+                    branch=str(row['branch']),
+                    address=str(row['address']),
+                    pincode=str(row['pincode']),
+                    city=str(row['city']),
+                    monthly_gross_inr=float(row['monthly_gross_inr']),
+                    department=str(row['department']),
+                    approver_user_id=str(row['approver_user_id'])
+                )
+                
+                employee = Employee(**employee_data.model_dump())
+                await db.employees.insert_one(employee.model_dump())
+                imported_count += 1
+                
+            except Exception as e:
+                errors.append(f"Row {index + 2}: {str(e)}")
+        
+        return {
+            "message": f"Import completed. {imported_count} employees imported successfully.",
+            "imported": imported_count,
+            "errors": errors if errors else None
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process file: {str(e)}")
+
+@api_router.post("/assets/import")
+async def import_assets(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Bulk import assets from Excel"""
+    if current_user['role'] not in ['Admin', 'Director']:
+        raise HTTPException(status_code=403, detail="Only Admin and Director can bulk upload")
+    
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="Only Excel files (.xlsx, .xls) are supported")
+    
+    try:
+        contents = await file.read()
+        df = pd.read_excel(BytesIO(contents))
+        
+        imported_count = 0
+        errors = []
+        
+        for index, row in df.iterrows():
+            try:
+                asset_data = AssetCreate(
+                    asset_type=str(row['asset_type']),
+                    model=str(row['model']),
+                    serial_number=str(row['serial_number']),
+                    purchase_date=str(row['purchase_date'])[:10],
+                    vendor=str(row['vendor']),
+                    value_ex_gst=float(row['value_ex_gst']),
+                    warranty_period_months=int(row['warranty_period_months']),
+                    alloted_to=str(row['alloted_to']),
+                    email=str(row['email']),
+                    department=str(row['department'])
+                )
+                
+                asset = Asset(**asset_data.model_dump())
+                
+                # Calculate warranty status
+                purchase_date = datetime.fromisoformat(asset.purchase_date)
+                warranty_end = purchase_date + timedelta(days=asset.warranty_period_months * 30)
+                asset.warranty_status = 'Active' if datetime.now() <= warranty_end else 'Expired'
+                
+                await db.assets.insert_one(asset.model_dump())
+                imported_count += 1
+                
+            except Exception as e:
+                errors.append(f"Row {index + 2}: {str(e)}")
+        
+        return {
+            "message": f"Import completed. {imported_count} assets imported successfully.",
+            "imported": imported_count,
+            "errors": errors if errors else None
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process file: {str(e)}")
 
 # ============= ASSET TRACKER ROUTES =============
 
