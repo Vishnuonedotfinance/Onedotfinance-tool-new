@@ -461,6 +461,19 @@ async def create_client(client_data: ClientCreate, current_user: dict = Depends(
 
 @api_router.patch("/clients/{client_id}")
 async def update_client(client_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    # Recalculate end_date and agreement_status if start_date or tenure_months changed
+    if 'start_date' in update_data or 'tenure_months' in update_data:
+        client = await db.clients.find_one({"id": client_id})
+        if client:
+            start_date = update_data.get('start_date', client.get('start_date'))
+            tenure_months = update_data.get('tenure_months', client.get('tenure_months'))
+            
+            if start_date and tenure_months:
+                end_date = calculate_end_date(start_date, tenure_months)
+                agreement_status = check_agreement_status(end_date)
+                update_data['end_date'] = end_date
+                update_data['agreement_status'] = agreement_status
+    
     await db.clients.update_one({"id": client_id}, {"$set": update_data})
     return {"message": "Client updated successfully"}
 
