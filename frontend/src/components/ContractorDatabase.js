@@ -45,7 +45,13 @@ export default function ContractorDatabase({ user }) {
   useEffect(() => {
     loadContractors();
     loadUsers();
-  }, [sortBy, filterStatus]);
+  }, [sortBy, filterStatus, filterDepartment]);
+
+  useEffect(() => {
+    if (formData.department) {
+      loadAvailableClients(formData.department);
+    }
+  }, [formData.department]);
 
   const loadContractors = async () => {
     try {
