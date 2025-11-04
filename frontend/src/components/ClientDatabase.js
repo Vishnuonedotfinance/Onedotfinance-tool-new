@@ -145,6 +145,18 @@ export default function ClientDatabase({ user }) {
     }
   };
 
+  const handleDelete = async (clientId, clientName) => {
+    if (window.confirm(`Are you sure you want to delete client "${clientName}"? This action cannot be undone.`)) {
+      try {
+        await api.delete(`/clients/${clientId}`);
+        toast.success('Client deleted successfully');
+        loadClients();
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to delete client');
+      }
+    }
+  };
+
   return (
     <div data-testid="client-database">
       <div className="table-container">
