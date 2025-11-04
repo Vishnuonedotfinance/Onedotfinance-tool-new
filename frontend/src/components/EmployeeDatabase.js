@@ -278,9 +278,9 @@ export default function EmployeeDatabase({ user }) {
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} data-testid="add-employee-modal">
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} data-testid="add-employee-modal" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="modal-header">
-              <h2>Add New Employee</h2>
+              <h2>{editMode ? 'Edit Employee' : 'Add New Employee'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>&times;</button>
             </div>
             <form onSubmit={handleSubmit}>
