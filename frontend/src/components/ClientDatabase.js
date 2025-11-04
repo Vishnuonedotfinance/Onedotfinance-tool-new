@@ -224,8 +224,34 @@ export default function ClientDatabase({ user }) {
     <div data-testid="client-database">
       <div className="table-container">
         <div className="table-header">
-          <h2>Client Database</h2>
+          <h2>Client Database <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>(Total: {clients.length})</span></h2>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* Department Filter */}
+            <select
+              value={filterDepartment}
+              onChange={(e) => setFilterDepartment(e.target.value)}
+              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+              data-testid="department-filter"
+            >
+              <option value="">All Services</option>
+              <option value="PPC">PPC</option>
+              <option value="SEO">SEO</option>
+              <option value="Content">Content</option>
+              <option value="Backlink">Backlink</option>
+            </select>
+
+            {/* Status Filter */}
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+              data-testid="status-filter"
+            >
+              <option value="">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Churned">Churned</option>
+            </select>
+
             <button
               className="btn-secondary"
               onClick={handleDownloadSample}
