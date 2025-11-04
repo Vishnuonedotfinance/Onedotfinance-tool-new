@@ -275,7 +275,18 @@ export default function Reports() {
         {/* Client Profitability */}
         {activeTab === 'client-profit' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <select
+                value={clientProfitDeptFilter}
+                onChange={(e) => setClientProfitDeptFilter(e.target.value)}
+                style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+              >
+                <option value="">All Departments</option>
+                <option value="PPC">PPC</option>
+                <option value="SEO">SEO</option>
+                <option value="Content">Content</option>
+                <option value="Backlink">Backlink</option>
+              </select>
               <button className="btn-secondary" onClick={downloadClientProfitability}>
                 <Download size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
                 Download Excel
@@ -292,6 +303,7 @@ export default function Reports() {
                     <th>Resources</th>
                     <th>Total Cost</th>
                     <th>Profit</th>
+                    <th>Profit %</th>
                   </tr>
                 </thead>
                 <tbody>
