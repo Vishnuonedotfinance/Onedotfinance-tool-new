@@ -24,7 +24,7 @@ export default function Dashboard() {
   if (loading) return <div>Loading dashboard...</div>;
   if (!data) return <div>Failed to load dashboard</div>;
 
-  const departments = ['PPC', 'SEO', 'Content', 'Business Development', 'Others'];
+  const departments = ['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others'];
 
   return (
     <div className="dashboard" data-testid="dashboard">
