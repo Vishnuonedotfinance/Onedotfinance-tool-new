@@ -333,6 +333,13 @@ export default function AssetTracker() {
                   </tr>
                 ))
               )}
+              {filteredAssets.length > 0 && (
+                <tr style={{ backgroundColor: '#f3f4f6', fontWeight: '600', borderTop: '2px solid #9ca3af' }}>
+                  <td colSpan="5" style={{ textAlign: 'right' }}>Total:</td>
+                  <td>₹{filteredAssets.reduce((sum, a) => sum + (a.value_ex_gst || 0), 0).toLocaleString()}</td>
+                  <td colSpan="5"></td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
