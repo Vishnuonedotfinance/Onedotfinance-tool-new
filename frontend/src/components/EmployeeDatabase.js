@@ -123,6 +123,7 @@ export default function EmployeeDatabase({ user }) {
       last_name: employee.last_name,
       father_name: employee.father_name,
       dob: employee.dob,
+      gender: employee.gender || 'Male',
       mobile: employee.mobile,
       personal_email: employee.personal_email,
       pan: employee.pan,
@@ -138,6 +139,7 @@ export default function EmployeeDatabase({ user }) {
       city: employee.city,
       monthly_gross_inr: employee.monthly_gross_inr,
       department: employee.department,
+      projects: employee.projects || [],
       approver_user_id: employee.approver_user_id
     });
     setEditId(employee.id);
@@ -154,6 +156,7 @@ export default function EmployeeDatabase({ user }) {
       last_name: '',
       father_name: '',
       dob: '',
+      gender: 'Male',
       mobile: '',
       personal_email: '',
       pan: '',
@@ -169,6 +172,7 @@ export default function EmployeeDatabase({ user }) {
       city: '',
       monthly_gross_inr: 0,
       department: 'PPC',
+      projects: [],
       approver_user_id: ''
     });
   };
