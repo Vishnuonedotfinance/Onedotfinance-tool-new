@@ -74,14 +74,52 @@ export default function EmployeeDatabase({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/employees', formData);
-      toast.success('Employee added successfully');
+      if (editMode) {
+        await api.patch(`/employees/${editId}`, formData);
+        toast.success('Employee updated successfully');
+      } else {
+        await api.post('/employees', formData);
+        toast.success('Employee added successfully');
+      }
       setShowModal(false);
+      setEditMode(false);
+      setEditId(null);
       resetForm();
       loadEmployees();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add employee');
+      toast.error(error.response?.data?.detail || `Failed to ${editMode ? 'update' : 'add'} employee`);
     }
+  };
+
+  const handleEdit = (employee) => {
+    setFormData({
+      doj: employee.doj,
+      work_email: employee.work_email,
+      emp_id: employee.emp_id,
+      first_name: employee.first_name,
+      last_name: employee.last_name,
+      father_name: employee.father_name,
+      dob: employee.dob,
+      mobile: employee.mobile,
+      personal_email: employee.personal_email,
+      pan: employee.pan,
+      aadhar: employee.aadhar,
+      uan: employee.uan,
+      pf_account_no: employee.pf_account_no,
+      bank_name: employee.bank_name,
+      account_no: employee.account_no,
+      ifsc: employee.ifsc,
+      branch: employee.branch,
+      address: employee.address,
+      pincode: employee.pincode,
+      city: employee.city,
+      monthly_gross_inr: employee.monthly_gross_inr,
+      department: employee.department,
+      approver_user_id: employee.approver_user_id
+    });
+    setEditId(employee.id);
+    setEditMode(true);
+    setShowModal(true);
   };
 
   const resetForm = () => {
