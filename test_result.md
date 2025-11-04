@@ -207,17 +207,89 @@ backend:
         comment: "✅ FIXED: Added authentication dependency to /api/assets/sample endpoint (and also fixed same issue in /clients/sample, /contractors/sample, /employees/sample). All sample endpoints now require authentication."
 
 frontend:
-  - task: "Asset Tracker UI with filters"
+  - task: "Client Database Updates"
     implemented: true
     working: "NA"
-    file: "/app/frontend/src/components/AssetTracker.js"
+    file: "/app/frontend/src/components/ClientDatabase.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Added department filter and warranty status filter dropdowns with real-time filtering of asset list"
+        comment: "Updated service dropdown to PPC, SEO, Content, Backlink. Added department and status filters. Added total count display"
+  
+  - task: "Contractor Database Enhancements"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ContractorDatabase.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Gender dropdown, Projects multi-select (dynamically loads active clients based on selected department), updated department dropdown to include Backlink, added department filter and total count"
+  
+  - task: "Employee Database Enhancements"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/EmployeeDatabase.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Gender dropdown, Projects multi-select (dynamically loads active clients based on selected department), updated department dropdown to include Backlink, added department filter and total count"
+  
+  - task: "Dashboard Updates"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Dashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added expired agreements alert card. Expanded departments array to include Backlink (6 total). Client counts already displaying alongside revenue"
+  
+  - task: "Users Delete Functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Users.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added delete button with confirmation dialog. Prevents deletion of Admin users"
+  
+  - task: "Reports Module (NEW)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Reports.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created new Reports component with 3 tabs: Department P&L (shows revenue, costs, profit %), Client-level Profitability (with Excel export, shows resources and split costs), Resource Utilization (shows per-client cost calculation)"
+  
+  - task: "Navigation Updates"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Layout.js, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Reports to sidebar navigation and routing"
 
   - task: "Asset Import/Export UI"
     implemented: true
