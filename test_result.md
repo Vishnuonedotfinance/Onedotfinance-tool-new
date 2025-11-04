@@ -322,24 +322,33 @@ agent_communication:
   - agent: "main"
     message: |
       Completed major feature additions across the entire application:
-      1. Added department filter dropdown (PPC, SEO, Content, Business Development, Others)
-      2. Added warranty status filter dropdown (Active, Expired)
-      3. Implemented real-time filtering in frontend using filteredAssets state
-      4. Added Import Excel button with file upload functionality
-      5. Added Export to Excel button for downloading all assets
-      6. Added Download Sample button for getting the sample template
       
-      Backend routes are already in place for all operations. Need to test:
-      - GET /api/org/{id}/assets with department filtering
-      - POST /api/org/{id}/assets for creating new assets
-      - PATCH /api/org/{id}/assets/{id} for updating assets
-      - DELETE /api/org/{id}/assets/{id} for deleting assets
-      - POST /api/org/{id}/assets/import for bulk import
-      - GET /api/org/{id}/assets/export for bulk export
-      - GET /api/org/{id}/assets/sample for sample template download
+      BACKEND:
+      1. Added "Backlink" department to all models (Client service, Contractor, Employee, Asset)
+      2. Added Gender (Male/Female/Other) field to Contractor and Employee
+      3. Added Projects (List[str]) field to Contractor and Employee
+      4. Dashboard API now returns expired_agreements list
+      5. Dashboard API expanded to 6 departments (added Backlink)
+      6. Added DELETE /api/users/{user_id} endpoint (Admin only, cannot delete Admin)
+      7. Added GET /api/clients/active-by-department?department=X for project selection
       
-      Authentication: Admin user (Vishnu@onedotfinance.com / 12345678)
-      Note: OTP is displayed in the response for testing purposes
+      FRONTEND:
+      1. Client Database: Updated service options, added filters and total count
+      2. Contractor Database: Added Gender, Projects multi-select, Backlink dept, filters, total
+      3. Employee Database: Added Gender, Projects multi-select, Backlink dept, filters, total
+      4. Dashboard: Added expired agreements card, shows 6 departments
+      5. Users: Added delete button with Admin protection
+      6. NEW Reports Module: Department P&L, Client Profitability (Excel export), Resource Utilization
+      7. Updated navigation with Reports link
+      
+      TESTING NEEDED:
+      - All new backend endpoints (user delete, clients by department, updated models)
+      - Frontend forms with new fields (Gender, Projects multi-select)
+      - Dashboard expired agreements display
+      - Reports module calculations and Excel export
+      - Multi-select project assignment and cost splitting logic
+      
+      Authentication: Admin (Vishnu@onedotfinance.com / 12345678)
   - agent: "testing"
     message: |
       Backend testing completed for Asset Tracker functionality:
