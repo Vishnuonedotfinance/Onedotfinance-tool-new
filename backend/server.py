@@ -1069,18 +1069,38 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
     # Sort birthdays by date
     upcoming_birthdays.sort(key=lambda x: datetime.fromisoformat(x['date']))
     
+    # Expired agreements
+    expired_clients = []
+    for client in clients_all:
+        if client.get('end_date'):
+            try:
+                end_date = datetime.fromisoformat(client['end_date'])
+                if hasattr(end_date, 'date'):
+                    end_date_only = end_date.date()
+                else:
+                    end_date_only = end_date
+                
+                if end_date_only < today.date():
+                    expired_clients.append({
+                        "name": client['client_name'],
+                        "end_date": client['end_date'],
+                        "service": client['service']
+                    })
+            except:
+                pass
+    
     # Revenue metrics
     clients = await db.clients.find({"client_status": "Active"}).to_list(1000)
     revenue_by_dept = {}
-    for dept in ['PPC', 'SEO', 'Content', 'Business Development', 'Others']:
-        dept_clients = [c for c in clients if c.get('service') == dept or (c.get('service') == 'Both' and dept in ['PPC', 'SEO'])]
+    for dept in ['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']:
+        dept_clients = [c for c in clients if c.get('service') == dept]
         count = len(dept_clients)
         amount = sum(c.get('amount_inr', 0) for c in dept_clients)
         revenue_by_dept[dept] = {"count": count, "amount": amount}
     
     # Employee metrics
     employee_by_dept = {}
-    for dept in ['PPC', 'SEO', 'Content', 'Business Development', 'Others']:
+    for dept in ['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']:
         dept_employees = [e for e in employees if e.get('department') == dept]
         count = len(dept_employees)
         cost = sum(e.get('monthly_gross_inr', 0) for e in dept_employees)
@@ -1088,7 +1108,7 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
     
     # Contractor metrics
     contractor_by_dept = {}
-    for dept in ['PPC', 'SEO', 'Content', 'Business Development', 'Others']:
+    for dept in ['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']:
         dept_contractors = [c for c in contractors if c.get('department') == dept]
         count = len(dept_contractors)
         cost = sum(c.get('monthly_retainer_inr', 0) for c in dept_contractors)
@@ -1097,6 +1117,7 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
     return {
         "alerts": {
             "expiring_agreements": expiring_clients,
+            "expired_agreements": expired_clients,
             "upcoming_birthdays": upcoming_birthdays
         },
         "revenue": revenue_by_dept,
