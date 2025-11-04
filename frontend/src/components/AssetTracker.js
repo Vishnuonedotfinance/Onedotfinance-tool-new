@@ -9,6 +9,7 @@ export default function AssetTracker() {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     asset_type: '',
     model: '',
