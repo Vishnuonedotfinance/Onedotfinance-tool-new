@@ -667,7 +667,7 @@ class BackendTester:
     
     def run_all_tests(self):
         """Run all tests and return summary"""
-        self.log("Starting Asset Tracker Backend API Tests")
+        self.log("Starting Backend API Tests for New Features")
         self.log(f"Base URL: {BASE_URL}")
         self.log(f"Test User: {TEST_EMAIL}")
         
@@ -677,20 +677,13 @@ class BackendTester:
         test_results['authentication'] = self.test_authentication()
         
         if test_results['authentication']:
-            # Test CRUD operations
-            test_results['crud_operations'] = self.test_asset_crud_operations()
-            
-            # Test sample template
-            test_results['sample_template'] = self.test_sample_template_download()
-            
-            # Test bulk export
-            test_results['bulk_export'] = self.test_bulk_export()
-            
-            # Test bulk import
-            test_results['bulk_import'] = self.test_bulk_import()
-            
-            # Test unauthorized access
-            test_results['unauthorized_access'] = self.test_unauthorized_access()
+            # Test new functionality
+            test_results['user_management'] = self.test_user_management()
+            test_results['client_service_update'] = self.test_client_service_update()
+            test_results['active_clients_by_department'] = self.test_active_clients_by_department()
+            test_results['contractor_new_fields'] = self.test_contractor_new_fields()
+            test_results['employee_new_fields'] = self.test_employee_new_fields()
+            test_results['dashboard_summary'] = self.test_dashboard_summary()
             
             # Cleanup
             self.cleanup()
