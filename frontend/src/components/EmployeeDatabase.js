@@ -22,6 +22,7 @@ export default function EmployeeDatabase({ user }) {
     last_name: '',
     father_name: '',
     dob: '',
+    gender: 'Male',
     mobile: '',
     personal_email: '',
     pan: '',
@@ -37,13 +38,22 @@ export default function EmployeeDatabase({ user }) {
     city: '',
     monthly_gross_inr: 0,
     department: 'PPC',
+    projects: [],
     approver_user_id: ''
   });
+  const [availableClients, setAvailableClients] = useState([]);
+  const [filterDepartment, setFilterDepartment] = useState('');
 
   useEffect(() => {
     loadEmployees();
     loadUsers();
-  }, [sortBy, filterStatus]);
+  }, [sortBy, filterStatus, filterDepartment]);
+
+  useEffect(() => {
+    if (formData.department) {
+      loadAvailableClients(formData.department);
+    }
+  }, [formData.department]);
 
   const loadEmployees = async () => {
     try {
