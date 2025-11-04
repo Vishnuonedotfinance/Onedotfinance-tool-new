@@ -212,6 +212,7 @@ class EmployeeCreate(BaseModel):
     last_name: str
     father_name: str
     dob: str
+    gender: Literal['Male', 'Female', 'Other'] = 'Male'
     mobile: str
     personal_email: EmailStr
     pan: str
@@ -227,6 +228,7 @@ class EmployeeCreate(BaseModel):
     city: str
     monthly_gross_inr: float
     department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
+    projects: List[str] = Field(default_factory=list)
     approver_user_id: str
 
 class Approval(BaseModel):
