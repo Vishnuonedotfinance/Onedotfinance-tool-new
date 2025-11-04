@@ -412,6 +412,11 @@ export default function EmployeeDatabase({ user }) {
                   </td>
                 </tr>
               ))}
+              <tr style={{ backgroundColor: '#f3f4f6', fontWeight: '600', borderTop: '2px solid #9ca3af' }}>
+                <td colSpan="6" style={{ textAlign: 'right' }}>Total:</td>
+                <td>₹{employees.reduce((sum, e) => sum + (e.monthly_gross_inr || 0), 0).toLocaleString()}</td>
+                <td colSpan="2"></td>
+              </tr>
             </tbody>
           </table>
         </div>
