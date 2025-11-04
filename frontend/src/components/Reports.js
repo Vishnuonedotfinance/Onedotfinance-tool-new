@@ -239,6 +239,8 @@ export default function Reports() {
               <thead>
                 <tr>
                   <th>Department</th>
+                  <th>Client Count</th>
+                  <th>Resource Count</th>
                   <th>Revenue</th>
                   <th>Employee Cost</th>
                   <th>Contractor Cost</th>
@@ -251,6 +253,8 @@ export default function Reports() {
                 {calculateDeptPL().map(row => (
                   <tr key={row.department}>
                     <td><strong>{row.department}</strong></td>
+                    <td>{row.clientCount}</td>
+                    <td>{row.resourceCount}</td>
                     <td>₹{row.revenue.toLocaleString()}</td>
                     <td>₹{row.employeeCost.toLocaleString()}</td>
                     <td>₹{row.contractorCost.toLocaleString()}</td>
