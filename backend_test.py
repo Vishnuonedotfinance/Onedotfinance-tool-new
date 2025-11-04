@@ -708,7 +708,7 @@ class BackendTester:
 
 def main():
     """Main function to run tests"""
-    tester = AssetTrackerTester()
+    tester = BackendTester()
     
     try:
         results = tester.run_all_tests()
