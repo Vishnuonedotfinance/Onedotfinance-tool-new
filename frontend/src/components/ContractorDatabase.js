@@ -80,6 +80,16 @@ export default function ContractorDatabase({ user }) {
     }
   };
 
+  const loadAvailableClients = async (department) => {
+    try {
+      const response = await api.get(`/clients/active-by-department?department=${department}`);
+      setAvailableClients(response.data);
+    } catch (error) {
+      console.error('Failed to load clients');
+      setAvailableClients([]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
