@@ -340,35 +340,54 @@ export default function Reports() {
 
         {/* Resource Utilization */}
         {activeTab === 'resource-util' && (
-          <div style={{ overflowX: 'auto' }}>
-            <table>
-              <thead>
-                <tr>
-                  <th>S/No</th>
-                  <th>Resource Name</th>
-                  <th>Type</th>
-                  <th>Cost (Monthly)</th>
-                  <th>Projects Count</th>
-                  <th>Per Client Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {calculateResourceUtilization().map((row, idx) => (
-                  <tr key={idx}>
-                    <td>{idx + 1}</td>
-                    <td>{row.name}</td>
-                    <td>
-                      <span className={`status-badge ${row.type === 'Employee' ? 'status-active' : 'status-pending'}`}>
-                        {row.type}
-                      </span>
-                    </td>
-                    <td>₹{row.cost.toLocaleString()}</td>
-                    <td>{row.projectCount}</td>
-                    <td>₹{row.perClientCost.toFixed(0)}</td>
+          <div>
+            <div style={{ marginBottom: '1rem' }}>
+              <select
+                value={resourceUtilDeptFilter}
+                onChange={(e) => setResourceUtilDeptFilter(e.target.value)}
+                style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+              >
+                <option value="">All Departments</option>
+                <option value="PPC">PPC</option>
+                <option value="SEO">SEO</option>
+                <option value="Content">Content</option>
+                <option value="Backlink">Backlink</option>
+                <option value="Business Development">Business Development</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>S/No</th>
+                    <th>Resource Name</th>
+                    <th>Type</th>
+                    <th>Department</th>
+                    <th>Cost (Monthly)</th>
+                    <th>Projects Count</th>
+                    <th>Per Client Cost</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {calculateResourceUtilization().map((row, idx) => (
+                    <tr key={idx}>
+                      <td>{idx + 1}</td>
+                      <td>{row.name}</td>
+                      <td>
+                        <span className={`status-badge ${row.type === 'Employee' ? 'status-active' : 'status-pending'}`}>
+                          {row.type}
+                        </span>
+                      </td>
+                      <td>{row.department}</td>
+                      <td>₹{row.cost.toLocaleString()}</td>
+                      <td>{row.projectCount}</td>
+                      <td>₹{row.perClientCost.toFixed(0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
