@@ -115,63 +115,78 @@ user_problem_statement: |
 backend:
   - task: "Department Updates - Add Backlink"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added 'Backlink' to all department literals across Client service, Contractor, Employee, and Asset models"
+      - working: true
+        agent: "testing"
+        comment: "✅ Backlink department successfully added and working. Created client with service='Backlink', contractor with department='Backlink', employee with department='Backlink'. All stored correctly and appear in dashboard metrics."
   
   - task: "Contractor & Employee New Fields"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added gender (Male/Female/Other) and projects (List[str]) fields to both Contractor and Employee models"
+      - working: true
+        agent: "testing"
+        comment: "✅ New fields working perfectly. Created contractor with gender='Male', projects=[], then updated projects with client IDs. Created employee with gender='Female', projects=[], then updated projects. All fields stored and retrieved correctly."
   
   - task: "Dashboard Enhancements"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py (lines 1015-1151)"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added expired_agreements section. Expanded department metrics from 5 to 6 (added Backlink). Shows client count alongside revenue for each department"
+      - working: true
+        agent: "testing"
+        comment: "✅ Dashboard enhancements working correctly. GET /api/dashboard/summary returns proper structure with alerts.expired_agreements array (found 7 expired agreements), revenue/employees/contractors objects all contain 'Backlink' key with proper count/amount/cost data."
   
   - task: "User Delete API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added DELETE /api/users/{user_id} endpoint with Admin-only access and protection for Admin role"
+      - working: true
+        agent: "testing"
+        comment: "✅ User delete API working correctly. Successfully created test Staff user and deleted it (200 response). Attempted to delete Admin user and correctly received 403 Forbidden response. Admin protection working as expected."
   
   - task: "Active Clients by Department API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added GET /api/clients/active-by-department?department=X for dynamic project selection"
+      - working: true
+        agent: "testing"
+        comment: "✅ Active clients by department API working correctly. GET /api/clients/active-by-department?department=PPC returned 5 active PPC clients. GET /api/clients/active-by-department?department=Backlink returned 1 active Backlink client. All returned clients have correct service/department and active status."
 
   - task: "Asset Import/Export functionality"
     implemented: true
