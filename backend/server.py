@@ -279,6 +279,34 @@ class OfferLetterGenerateRequest(BaseModel):
     position: str
     department: str
 
+class Asset(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"asset_{uuid.uuid4().hex[:8]}")
+    asset_type: str
+    model: str
+    serial_number: str
+    purchase_date: str
+    vendor: str
+    value_ex_gst: float
+    warranty_period_months: int
+    alloted_to: str
+    email: EmailStr
+    department: Literal['PPC', 'SEO', 'Content', 'Business Development', 'Others']
+    warranty_status: str = "Active"
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class AssetCreate(BaseModel):
+    asset_type: str
+    model: str
+    serial_number: str
+    purchase_date: str
+    vendor: str
+    value_ex_gst: float
+    warranty_period_months: int
+    alloted_to: str
+    email: EmailStr
+    department: Literal['PPC', 'SEO', 'Content', 'Business Development', 'Others']
+
 # ============= HELPER FUNCTIONS =============
 
 def hash_password(password: str) -> str:
