@@ -203,11 +203,28 @@ export default function EmployeeDatabase({ user }) {
                   </td>
                   <td>
                     <div className="action-buttons">
-                      <button className="btn-icon" data-testid={`view-employee-${employee.id}`}>
+                      <button 
+                        className="btn-icon" 
+                        data-testid={`view-employee-${employee.id}`}
+                        title="View"
+                      >
                         <Edit size={16} />
                       </button>
-                      <button className="btn-icon" data-testid={`download-employee-${employee.id}`}>
+                      <button 
+                        className="btn-icon" 
+                        data-testid={`download-employee-${employee.id}`}
+                        title="Download"
+                      >
                         <Download size={16} />
+                      </button>
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => handleDelete(employee.id, `${employee.first_name} ${employee.last_name}`)}
+                        data-testid={`delete-employee-${employee.id}`}
+                        style={{ color: '#dc2626' }}
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
