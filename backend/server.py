@@ -1165,7 +1165,7 @@ async def export_employees(current_user: dict = Depends(get_current_user)):
     )
 
 @api_router.get("/clients/sample")
-async def get_client_sample():
+async def get_client_sample(current_user: dict = Depends(get_current_user)):
     """Download sample Excel template for bulk upload"""
     wb = Workbook()
     ws = wb.active
