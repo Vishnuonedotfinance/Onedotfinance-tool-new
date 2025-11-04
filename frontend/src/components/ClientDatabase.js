@@ -180,33 +180,7 @@ export default function ClientDatabase({ user }) {
       <div className="table-container">
         <div className="table-header">
           <h2>Client Database</h2>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <FilterSort
-              onSortChange={setSortBy}
-              onFilterChange={(type, value) => {
-                if (type === 'status') setFilterStatus(value);
-                if (type === 'department') setFilterDepartment(value);
-              }}
-              sortOptions={[
-                { value: 'client_name_asc', label: 'Name (A-Z)' },
-                { value: 'client_name_desc', label: 'Name (Z-A)' },
-                { value: 'start_date_desc', label: 'Date (Newest)' },
-                { value: 'start_date_asc', label: 'Date (Oldest)' }
-              ]}
-              filterOptions={[
-                { type: 'status', label: 'Status', options: [
-                  { value: 'Active', label: 'Active' },
-                  { value: 'Churned', label: 'Churned' }
-                ]},
-                { type: 'department', label: 'Service', options: [
-                  { value: 'PPC', label: 'PPC' },
-                  { value: 'SEO', label: 'SEO' },
-                  { value: 'Both', label: 'Both' }
-                ]}
-              ]}
-              currentSort={sortBy}
-              currentFilters={{ status: filterStatus, department: filterDepartment }}
-            />
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <button
               className="btn-secondary"
               onClick={handleExport}
