@@ -454,6 +454,14 @@ export default function ContractorDatabase({ user }) {
                     <input type="date" value={formData.dob} onChange={(e) => setFormData({ ...formData, dob: e.target.value })} required data-testid="dob-input" />
                   </div>
                   <div className="form-group">
+                    <label>Gender *</label>
+                    <select value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} data-testid="gender-select">
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
                     <label>Mobile *</label>
                     <input type="tel" value={formData.mobile} onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} required data-testid="mobile-input" />
                   </div>
