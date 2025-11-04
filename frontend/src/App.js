@@ -13,6 +13,7 @@ import ICAGenerator from './components/ICAGenerator';
 import EmployeeDatabase from './components/EmployeeDatabase';
 import OfferLetterGenerator from './components/OfferLetterGenerator';
 import Approval from './components/Approval';
+import AssetTracker from './components/AssetTracker';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
