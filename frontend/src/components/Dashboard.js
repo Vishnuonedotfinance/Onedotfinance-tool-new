@@ -95,7 +95,7 @@ export default function Dashboard() {
           Recurring Revenue
         </h2>
         <div className="metrics-grid">
-          {departments.map(dept => (
+          {departments.filter(dept => !['Business Development', 'Others'].includes(dept)).map(dept => (
             <div key={dept} className="metric-card" data-testid={`revenue-${dept.toLowerCase().replace(' ', '-')}`}>
               <h4>{dept}</h4>
               <div className="metric-value">{data.revenue[dept]?.count || 0}</div>
