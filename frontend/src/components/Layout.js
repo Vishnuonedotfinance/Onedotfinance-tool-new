@@ -122,6 +122,14 @@ export default function Layout({ children, user, onLogout }) {
             <CheckCircle /> Approval
           </Link>
 
+          <Link
+            to="/asset-tracker"
+            className={`nav-item ${location.pathname === '/asset-tracker' ? 'active' : ''}`}
+            data-testid="nav-asset-tracker"
+          >
+            <Package /> Asset Tracker
+          </Link>
+
           <a
             href="https://www.zoho.com/payroll/"
             target="_blank"
