@@ -170,6 +170,65 @@ export default function ContractorDatabase({ user }) {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const response = await api.get('/contractors/export', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'contractors_export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Contractors exported successfully');
+    } catch (error) {
+      toast.error('Failed to export contractors');
+    }
+  };
+
+  const handleDownloadSample = async () => {
+    try {
+      const response = await api.get('/contractors/sample', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'contractor_sample.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Sample template downloaded');
+    } catch (error) {
+      toast.error('Failed to download sample');
+    }
+  };
+
+  const handleImport = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await api.post('/contractors/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      toast.success(response.data.message);
+      if (response.data.errors && response.data.errors.length > 0) {
+        console.log('Import errors:', response.data.errors);
+        toast.warning(`${response.data.errors.length} rows had errors. Check console for details.`);
+      }
+      loadContractors();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to import contractors');
+    }
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div data-testid="contractor-database">
       <div className="table-container">
