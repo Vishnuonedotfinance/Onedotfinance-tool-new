@@ -140,15 +140,18 @@ backend:
 
   - task: "Asset Sample Template generation"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py (lines 1265-1293)"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented sample Excel template generation with example data (/api/org/{id}/assets/sample)"
+      - working: false
+        agent: "testing"
+        comment: "❌ SECURITY ISSUE: GET /api/assets/sample endpoint accessible without authentication (returns 200). Template generation works (5209 bytes Excel file) but missing authentication dependency. Route is at /api/assets/sample not /api/org/{id}/assets/sample."
 
 frontend:
   - task: "Asset Tracker UI with filters"
