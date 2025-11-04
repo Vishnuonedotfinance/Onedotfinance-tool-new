@@ -1230,7 +1230,7 @@ async def get_contractor_sample(current_user: dict = Depends(get_current_user)):
     )
 
 @api_router.get("/employees/sample")
-async def get_employee_sample():
+async def get_employee_sample(current_user: dict = Depends(get_current_user)):
     """Download sample Excel template for bulk upload"""
     wb = Workbook()
     ws = wb.active
