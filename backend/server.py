@@ -778,6 +778,18 @@ async def update_employee(employee_id: str, update_data: dict, current_user: dic
     await db.employees.update_one({"id": employee_id}, {"$set": update_data})
     return {"message": "Employee updated successfully"}
 
+@api_router.delete("/employees/{employee_id}")
+async def delete_employee(employee_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an employee - Admin and Director only"""
+    if current_user['role'] not in ['Admin', 'Director']:
+        raise HTTPException(status_code=403, detail="Only Admin and Director can delete employees")
+    
+    result = await db.employees.delete_one({"id": employee_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    return {"message": "Employee deleted successfully"}
+
 @api_router.post("/employees/generate-offer")
 async def generate_offer_letter(request: OfferLetterGenerateRequest):
     # Calculate CTC
