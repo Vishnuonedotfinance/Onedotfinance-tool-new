@@ -65,7 +65,13 @@ export default function EmployeeDatabase({ user }) {
       if (params.length > 0) url += '?' + params.join('&');
       
       const response = await api.get(url);
-      setEmployees(response.data);
+      // Sort by status: Active first, then Terminated
+      const sorted = response.data.sort((a, b) => {
+        if (a.status === 'Active' && b.status !== 'Active') return -1;
+        if (a.status !== 'Active' && b.status === 'Active') return 1;
+        return 0;
+      });
+      setEmployees(sorted);
     } catch (error) {
       toast.error('Failed to load employees');
     } finally {
