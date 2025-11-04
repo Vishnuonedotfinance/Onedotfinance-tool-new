@@ -20,6 +20,7 @@ export default function ContractorDatabase({ user }) {
     start_date: '',
     tenure_months: 6,
     dob: '',
+    gender: 'Male',
     pan: '',
     aadhar: '',
     mobile: '',
@@ -33,10 +34,13 @@ export default function ContractorDatabase({ user }) {
     city: '',
     address_2: '',
     department: 'PPC',
+    projects: [],
     monthly_retainer_inr: 0,
     designation: '',
     approver_user_id: ''
   });
+  const [availableClients, setAvailableClients] = useState([]);
+  const [filterDepartment, setFilterDepartment] = useState('');
 
   useEffect(() => {
     loadContractors();
