@@ -508,6 +508,20 @@ async def get_clients(
     
     return clients
 
+@api_router.get("/clients/active-by-department")
+async def get_active_clients_by_department(
+    department: str = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get active clients filtered by service/department for project assignment"""
+    query = {"client_status": "Active"}
+    if department:
+        query['service'] = department
+    
+    clients = await db.clients.find(query, {"_id": 0, "id": 1, "client_name": 1, "service": 1}).to_list(1000)
+    return clients
+
+
 @api_router.post("/clients", response_model=Client)
 async def create_client(client_data: ClientCreate, current_user: dict = Depends(get_current_user)):
     client = Client(**client_data.model_dump())
