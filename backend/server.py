@@ -1096,6 +1096,187 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
         "contractors": contractor_by_dept
     }
 
+# ============= BULK EXPORT/IMPORT ROUTES =============
+
+@api_router.get("/clients/export")
+async def export_clients(current_user: dict = Depends(get_current_user)):
+    """Export all clients to Excel"""
+    clients = await db.clients.find({}, {"_id": 0}).to_list(1000)
+    
+    if not clients:
+        raise HTTPException(status_code=404, detail="No clients to export")
+    
+    df = pd.DataFrame(clients)
+    output = BytesIO()
+    
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Clients')
+    
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="clients_export.xlsx"'}
+    )
+
+@api_router.get("/contractors/export")
+async def export_contractors(current_user: dict = Depends(get_current_user)):
+    """Export all contractors to Excel"""
+    contractors = await db.contractors.find({}, {"_id": 0}).to_list(1000)
+    
+    if not contractors:
+        raise HTTPException(status_code=404, detail="No contractors to export")
+    
+    df = pd.DataFrame(contractors)
+    output = BytesIO()
+    
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Contractors')
+    
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="contractors_export.xlsx"'}
+    )
+
+@api_router.get("/employees/export")
+async def export_employees(current_user: dict = Depends(get_current_user)):
+    """Export all employees to Excel"""
+    employees = await db.employees.find({}, {"_id": 0}).to_list(1000)
+    
+    if not employees:
+        raise HTTPException(status_code=404, detail="No employees to export")
+    
+    df = pd.DataFrame(employees)
+    output = BytesIO()
+    
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Employees')
+    
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="employees_export.xlsx"'}
+    )
+
+@api_router.get("/clients/sample")
+async def get_client_sample():
+    """Download sample Excel template for bulk upload"""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Clients"
+    
+    # Headers
+    headers = ['client_name', 'address', 'start_date', 'tenure_months', 'currency_preference', 
+               'service', 'amount_inr', 'authorised_signatory', 'signatory_designation', 
+               'gst', 'poc_name', 'poc_email', 'poc_designation', 'poc_mobile', 'approver_user_id']
+    
+    ws.append(headers)
+    
+    # Sample row
+    ws.append(['ABC Corp', '123 Main St', '2025-01-01', 12, 'INR', 'PPC', 50000, 
+               'John Doe', 'CEO', 'GST123', 'Jane Smith', 'jane@abc.com', 'Manager', '9876543210', 'user_id'])
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="client_sample.xlsx"'}
+    )
+
+@api_router.post("/clients/import")
+async def import_clients(file: bytes = None, current_user: dict = Depends(get_current_user)):
+    """Bulk import clients from Excel"""
+    if current_user['role'] not in ['Admin', 'Director']:
+        raise HTTPException(status_code=403, detail="Only Admin and Director can bulk upload")
+    
+    # This would process the uploaded Excel file
+    # Simplified version - actual implementation would parse the file
+    return {"message": "Bulk import feature - file upload handling to be implemented"}
+
+# ============= ASSET TRACKER ROUTES =============
+
+@api_router.get("/assets", response_model=List[Asset])
+async def get_assets(
+    current_user: dict = Depends(get_current_user),
+    department: str = None
+):
+    query = {}
+    if department:
+        query['department'] = department
+    
+    assets = await db.assets.find(query, {"_id": 0}).to_list(1000)
+    
+    # Update warranty status
+    for asset in assets:
+        purchase_date = datetime.fromisoformat(asset['purchase_date'])
+        warranty_end = purchase_date + timedelta(days=asset['warranty_period_months'] * 30)
+        if datetime.now() > warranty_end:
+            asset['warranty_status'] = 'Expired'
+        else:
+            asset['warranty_status'] = 'Active'
+    
+    return assets
+
+@api_router.post("/assets", response_model=Asset)
+async def create_asset(asset_data: AssetCreate, current_user: dict = Depends(get_current_user)):
+    asset = Asset(**asset_data.model_dump())
+    
+    # Calculate warranty status
+    purchase_date = datetime.fromisoformat(asset.purchase_date)
+    warranty_end = purchase_date + timedelta(days=asset.warranty_period_months * 30)
+    asset.warranty_status = 'Active' if datetime.now() <= warranty_end else 'Expired'
+    
+    doc = asset.model_dump()
+    await db.assets.insert_one(doc)
+    return asset
+
+@api_router.patch("/assets/{asset_id}")
+async def update_asset(asset_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    await db.assets.update_one({"id": asset_id}, {"$set": update_data})
+    return {"message": "Asset updated successfully"}
+
+@api_router.delete("/assets/{asset_id}")
+async def delete_asset(asset_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['Admin', 'Director']:
+        raise HTTPException(status_code=403, detail="Only Admin and Director can delete assets")
+    
+    result = await db.assets.delete_one({"id": asset_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    
+    return {"message": "Asset deleted successfully"}
+
+@api_router.get("/assets/export")
+async def export_assets(current_user: dict = Depends(get_current_user)):
+    """Export all assets to Excel"""
+    assets = await db.assets.find({}, {"_id": 0}).to_list(1000)
+    
+    if not assets:
+        raise HTTPException(status_code=404, detail="No assets to export")
+    
+    df = pd.DataFrame(assets)
+    output = BytesIO()
+    
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Assets')
+    
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="assets_export.xlsx"'}
+    )
+
 app.include_router(api_router)
 
 app.add_middleware(
