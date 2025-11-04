@@ -118,6 +118,7 @@ export default function ContractorDatabase({ user }) {
       start_date: contractor.start_date,
       tenure_months: contractor.tenure_months,
       dob: contractor.dob,
+      gender: contractor.gender || 'Male',
       pan: contractor.pan,
       aadhar: contractor.aadhar,
       mobile: contractor.mobile,
@@ -131,6 +132,7 @@ export default function ContractorDatabase({ user }) {
       city: contractor.city,
       address_2: contractor.address_2 || '',
       department: contractor.department,
+      projects: contractor.projects || [],
       monthly_retainer_inr: contractor.monthly_retainer_inr,
       designation: contractor.designation,
       approver_user_id: contractor.approver_user_id
