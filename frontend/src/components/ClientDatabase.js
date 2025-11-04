@@ -246,11 +246,25 @@ export default function ClientDatabase({ user }) {
                         className="btn-icon" 
                         onClick={() => handleEdit(client)}
                         data-testid={`edit-client-${client.id}`}
+                        title="Edit"
                       >
                         <Edit size={16} />
                       </button>
-                      <button className="btn-icon" data-testid={`download-client-${client.id}`}>
+                      <button 
+                        className="btn-icon" 
+                        data-testid={`download-client-${client.id}`}
+                        title="Download"
+                      >
                         <Download size={16} />
+                      </button>
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => handleDelete(client.id, client.client_name)}
+                        data-testid={`delete-client-${client.id}`}
+                        style={{ color: '#dc2626' }}
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
