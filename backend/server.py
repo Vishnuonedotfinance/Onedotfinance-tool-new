@@ -674,6 +674,18 @@ async def update_contractor(contractor_id: str, update_data: dict, current_user:
     await db.contractors.update_one({"id": contractor_id}, {"$set": update_data})
     return {"message": "Contractor updated successfully"}
 
+@api_router.delete("/contractors/{contractor_id}")
+async def delete_contractor(contractor_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a contractor - Admin and Director only"""
+    if current_user['role'] not in ['Admin', 'Director']:
+        raise HTTPException(status_code=403, detail="Only Admin and Director can delete contractors")
+    
+    result = await db.contractors.delete_one({"id": contractor_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+    
+    return {"message": "Contractor deleted successfully"}
+
 @api_router.post("/contractors/generate-ica")
 async def generate_ica(request: ICAGenerateRequest):
     # Generate simple ICA document
