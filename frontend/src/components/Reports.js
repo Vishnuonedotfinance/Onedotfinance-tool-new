@@ -140,6 +140,10 @@ export default function Reports() {
       });
     });
 
+    if (resourceUtilDeptFilter) {
+      allResources = allResources.filter(r => r.department === resourceUtilDeptFilter);
+    }
+
     return allResources;
   };
 
