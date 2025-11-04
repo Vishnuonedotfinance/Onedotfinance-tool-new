@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../App';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Download } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Upload, FileDown } from 'lucide-react';
 
 export default function AssetTracker() {
   const [assets, setAssets] = useState([]);
