@@ -286,45 +286,53 @@ export default function AssetTracker() {
               </tr>
             </thead>
             <tbody>
-              {assets.map((asset, idx) => (
-                <tr key={asset.id} data-testid={`asset-row-${asset.id}`}>
-                  <td>{idx + 1}</td>
-                  <td>{asset.asset_type}</td>
-                  <td>{asset.model}</td>
-                  <td>{asset.serial_number}</td>
-                  <td>{asset.purchase_date}</td>
-                  <td>₹{asset.value_ex_gst.toLocaleString()}</td>
-                  <td>
-                    <span className={`status-badge ${asset.warranty_status === 'Active' ? 'status-active' : 'status-inactive'}`}>
-                      {asset.warranty_status}
-                    </span>
-                  </td>
-                  <td>{asset.alloted_to}</td>
-                  <td>{asset.email}</td>
-                  <td>{asset.department}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button 
-                        className="btn-icon" 
-                        onClick={() => handleEdit(asset)}
-                        data-testid={`edit-asset-${asset.id}`}
-                        title="Edit"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button 
-                        className="btn-icon" 
-                        onClick={() => handleDelete(asset.id, asset.asset_type)}
-                        data-testid={`delete-asset-${asset.id}`}
-                        style={{ color: '#dc2626' }}
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+              {filteredAssets.length === 0 ? (
+                <tr>
+                  <td colSpan="11" style={{ textAlign: 'center', padding: '2rem' }}>
+                    {loading ? 'Loading...' : 'No assets found'}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredAssets.map((asset, idx) => (
+                  <tr key={asset.id} data-testid={`asset-row-${asset.id}`}>
+                    <td>{idx + 1}</td>
+                    <td>{asset.asset_type}</td>
+                    <td>{asset.model}</td>
+                    <td>{asset.serial_number}</td>
+                    <td>{asset.purchase_date}</td>
+                    <td>₹{asset.value_ex_gst.toLocaleString()}</td>
+                    <td>
+                      <span className={`status-badge ${asset.warranty_status === 'Active' ? 'status-active' : 'status-inactive'}`}>
+                        {asset.warranty_status}
+                      </span>
+                    </td>
+                    <td>{asset.alloted_to}</td>
+                    <td>{asset.email}</td>
+                    <td>{asset.department}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button 
+                          className="btn-icon" 
+                          onClick={() => handleEdit(asset)}
+                          data-testid={`edit-asset-${asset.id}`}
+                          title="Edit"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          className="btn-icon" 
+                          onClick={() => handleDelete(asset.id, asset.asset_type)}
+                          data-testid={`delete-asset-${asset.id}`}
+                          style={{ color: '#dc2626' }}
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
