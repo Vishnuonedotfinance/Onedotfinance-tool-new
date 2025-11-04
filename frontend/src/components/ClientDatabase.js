@@ -13,6 +13,7 @@ export default function ClientDatabase({ user }) {
   const [editId, setEditId] = useState(null);
   const [sortBy, setSortBy] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterDepartment, setFilterDepartment] = useState('');
   const [formData, setFormData] = useState({
     client_name: '',
     address: '',
