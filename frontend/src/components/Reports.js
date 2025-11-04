@@ -37,23 +37,21 @@ export default function Reports() {
   const calculateDeptPL = () => {
     const departments = ['PPC', 'SEO', 'Content', 'Backlink'];
     return departments.map(dept => {
-      const revenue = clients
-        .filter(c => c.service === dept)
-        .reduce((sum, c) => sum + (c.amount_inr || 0), 0);
+      const deptClients = clients.filter(c => c.service === dept);
+      const deptEmployees = employees.filter(e => e.department === dept);
+      const deptContractors = contractors.filter(c => c.department === dept);
       
-      const employeeCost = employees
-        .filter(e => e.department === dept)
-        .reduce((sum, e) => sum + (e.monthly_gross_inr || 0), 0);
-      
-      const contractorCost = contractors
-        .filter(c => c.department === dept)
-        .reduce((sum, c) => sum + (c.monthly_retainer_inr || 0), 0);
+      const revenue = deptClients.reduce((sum, c) => sum + (c.amount_inr || 0), 0);
+      const employeeCost = deptEmployees.reduce((sum, e) => sum + (e.monthly_gross_inr || 0), 0);
+      const contractorCost = deptContractors.reduce((sum, c) => sum + (c.monthly_retainer_inr || 0), 0);
       
       const profit = revenue - employeeCost - contractorCost;
       const profitPercent = revenue > 0 ? ((profit / revenue) * 100).toFixed(2) : 0;
 
       return {
         department: dept,
+        clientCount: deptClients.length,
+        resourceCount: deptEmployees.length + deptContractors.length,
         revenue,
         employeeCost,
         contractorCost,
