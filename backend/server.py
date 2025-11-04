@@ -1263,7 +1263,7 @@ async def get_employee_sample():
     )
 
 @api_router.get("/assets/sample")
-async def get_asset_sample():
+async def get_asset_sample(current_user: dict = Depends(get_current_user)):
     """Download sample Excel template for bulk upload"""
     wb = Workbook()
     ws = wb.active
