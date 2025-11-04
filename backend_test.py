@@ -88,103 +88,519 @@ class BackendTester:
             self.log(f"Authentication error: {str(e)}", "ERROR")
             return False
     
-    def test_asset_crud_operations(self):
-        """Test Asset CRUD operations"""
-        self.log("=== Testing Asset CRUD Operations ===")
+    def test_user_management(self):
+        """Test User Management - Create test user, DELETE test user, try DELETE Admin user"""
+        self.log("=== Testing User Management ===")
         
         if not self.token:
             self.log("No authentication token available", "ERROR")
             return False
             
-        # Test data for asset creation
-        asset_data = {
-            "asset_type": "Laptop",
-            "model": "MacBook Pro 16",
-            "serial_number": "TEST123456",
-            "purchase_date": "2024-01-15",
-            "vendor": "Apple Store",
-            "value_ex_gst": 150000,
-            "warranty_period_months": 12,
-            "alloted_to": "Test User",
-            "email": "test@company.com",
-            "department": "PPC"
-        }
-        
         try:
-            # Step 1: Create Asset
-            self.log("Step 1: Testing asset creation...")
-            response = self.session.post(f"{BASE_URL}/assets", json=asset_data)
-            self.log(f"Create asset response status: {response.status_code}")
+            # Step 1: Create a test user (Staff role)
+            self.log("Step 1: Creating test user with Staff role...")
+            user_data = {
+                "name": "Test Staff User",
+                "email": "teststaff@company.com",
+                "mobile": "9876543210",
+                "role": "Staff",
+                "password": "testpass123"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/users", json=user_data)
+            self.log(f"Create user response status: {response.status_code}")
             
             if response.status_code != 200:
-                self.log(f"Asset creation failed: {response.text}", "ERROR")
+                self.log(f"User creation failed: {response.text}", "ERROR")
                 return False
                 
-            created_asset = response.json()
-            asset_id = created_asset.get('id')
-            self.created_assets.append(asset_id)
-            self.log(f"Asset created successfully. ID: {asset_id}")
+            created_user = response.json()
+            user_id = created_user.get('id')
+            self.created_users.append(user_id)
+            self.log(f"Test user created successfully. ID: {user_id}")
             
-            # Step 2: Get All Assets
-            self.log("Step 2: Testing get all assets...")
-            response = self.session.get(f"{BASE_URL}/assets")
-            self.log(f"Get assets response status: {response.status_code}")
-            
-            if response.status_code != 200:
-                self.log(f"Get assets failed: {response.text}", "ERROR")
-                return False
-                
-            assets = response.json()
-            self.log(f"Retrieved {len(assets)} assets")
-            
-            # Verify our created asset is in the list
-            found_asset = next((a for a in assets if a.get('id') == asset_id), None)
-            if not found_asset:
-                self.log("Created asset not found in assets list", "ERROR")
-                return False
-                
-            # Step 3: Test Department Filtering
-            self.log("Step 3: Testing department filtering...")
-            response = self.session.get(f"{BASE_URL}/assets?department=PPC")
-            self.log(f"Filter by department response status: {response.status_code}")
-            
-            if response.status_code != 200:
-                self.log(f"Department filtering failed: {response.text}", "ERROR")
-                return False
-                
-            filtered_assets = response.json()
-            self.log(f"Found {len(filtered_assets)} assets in PPC department")
-            
-            # Step 4: Update Asset
-            self.log("Step 4: Testing asset update...")
-            update_data = {"model": "MacBook Pro 14"}
-            response = self.session.patch(f"{BASE_URL}/assets/{asset_id}", json=update_data)
-            self.log(f"Update asset response status: {response.status_code}")
-            
-            if response.status_code != 200:
-                self.log(f"Asset update failed: {response.text}", "ERROR")
-                return False
-                
-            self.log("Asset updated successfully")
-            
-            # Step 5: Test Delete (should work for Admin/Director)
-            self.log("Step 5: Testing asset deletion...")
-            response = self.session.delete(f"{BASE_URL}/assets/{asset_id}")
-            self.log(f"Delete asset response status: {response.status_code}")
+            # Step 2: Try to DELETE the test user (should work for Admin)
+            self.log("Step 2: Testing deletion of test user...")
+            response = self.session.delete(f"{BASE_URL}/users/{user_id}")
+            self.log(f"Delete test user response status: {response.status_code}")
             
             if response.status_code == 200:
-                self.log("Asset deleted successfully")
-                self.created_assets.remove(asset_id)
+                self.log("Test user deleted successfully")
+                self.created_users.remove(user_id)
             elif response.status_code == 403:
-                self.log("Delete forbidden - user doesn't have Admin/Director role")
+                self.log("Delete forbidden - current user doesn't have Admin role", "ERROR")
+                return False
             else:
-                self.log(f"Delete failed: {response.text}", "ERROR")
+                self.log(f"Delete test user failed: {response.text}", "ERROR")
+                return False
+            
+            # Step 3: Try to DELETE an Admin user (should fail with 403)
+            self.log("Step 3: Testing deletion of Admin user (should fail)...")
+            
+            # First get all users to find an Admin
+            response = self.session.get(f"{BASE_URL}/users")
+            if response.status_code != 200:
+                self.log(f"Failed to get users: {response.text}", "ERROR")
                 return False
                 
+            users = response.json()
+            admin_user = next((u for u in users if u.get('role') == 'Admin'), None)
+            
+            if not admin_user:
+                self.log("No Admin user found to test deletion", "WARNING")
+                return True
+                
+            admin_id = admin_user.get('id')
+            response = self.session.delete(f"{BASE_URL}/users/{admin_id}")
+            self.log(f"Delete Admin user response status: {response.status_code}")
+            
+            if response.status_code == 403:
+                self.log("Admin user deletion correctly forbidden")
+                return True
+            else:
+                self.log(f"Admin user deletion should have been forbidden but got: {response.status_code}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"User management test error: {str(e)}", "ERROR")
+            return False
+    
+    def test_client_service_update(self):
+        """Test Client Service Update - Create client with service='Backlink'"""
+        self.log("=== Testing Client Service Update ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        try:
+            # Step 1: Create a new client with service="Backlink"
+            self.log("Step 1: Creating client with Backlink service...")
+            client_data = {
+                "client_name": "Backlink Test Client",
+                "address": "123 Test Street, Test City",
+                "start_date": "2025-01-01",
+                "tenure_months": 12,
+                "currency_preference": "INR",
+                "service": "Backlink",
+                "amount_inr": 75000,
+                "authorised_signatory": "John Doe",
+                "signatory_designation": "CEO",
+                "gst": "GST123456789",
+                "poc_name": "Jane Smith",
+                "poc_email": "jane@backlinktest.com",
+                "poc_designation": "Manager",
+                "poc_mobile": "9876543210",
+                "approver_user_id": self.user_info.get('id')
+            }
+            
+            response = self.session.post(f"{BASE_URL}/clients", json=client_data)
+            self.log(f"Create client response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Client creation failed: {response.text}", "ERROR")
+                return False
+                
+            created_client = response.json()
+            client_id = created_client.get('id')
+            self.created_clients.append(client_id)
+            self.log(f"Backlink client created successfully. ID: {client_id}")
+            
+            # Verify service is set correctly
+            if created_client.get('service') != 'Backlink':
+                self.log(f"Service not set correctly. Expected: Backlink, Got: {created_client.get('service')}", "ERROR")
+                return False
+            
+            # Step 2: GET /api/clients to verify the new service type
+            self.log("Step 2: Verifying Backlink service in clients list...")
+            response = self.session.get(f"{BASE_URL}/clients")
+            self.log(f"Get clients response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Get clients failed: {response.text}", "ERROR")
+                return False
+                
+            clients = response.json()
+            backlink_clients = [c for c in clients if c.get('service') == 'Backlink']
+            self.log(f"Found {len(backlink_clients)} clients with Backlink service")
+            
+            # Verify our created client is in the list
+            found_client = next((c for c in backlink_clients if c.get('id') == client_id), None)
+            if not found_client:
+                self.log("Created Backlink client not found in clients list", "ERROR")
+                return False
+                
+            self.log("Backlink service successfully verified in clients list")
             return True
             
         except Exception as e:
-            self.log(f"CRUD operations error: {str(e)}", "ERROR")
+            self.log(f"Client service update test error: {str(e)}", "ERROR")
+            return False
+    
+    def test_active_clients_by_department(self):
+        """Test Active Clients by Department API"""
+        self.log("=== Testing Active Clients by Department ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        try:
+            # Step 1: GET /api/clients/active-by-department?department=PPC
+            self.log("Step 1: Testing active clients for PPC department...")
+            response = self.session.get(f"{BASE_URL}/clients/active-by-department?department=PPC")
+            self.log(f"Active PPC clients response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Get active PPC clients failed: {response.text}", "ERROR")
+                return False
+                
+            ppc_clients = response.json()
+            self.log(f"Found {len(ppc_clients)} active PPC clients")
+            
+            # Verify all returned clients have service=PPC and client_status=Active
+            for client in ppc_clients:
+                if client.get('service') != 'PPC':
+                    self.log(f"Non-PPC client returned: {client.get('service')}", "ERROR")
+                    return False
+            
+            # Step 2: GET /api/clients/active-by-department?department=Backlink
+            self.log("Step 2: Testing active clients for Backlink department...")
+            response = self.session.get(f"{BASE_URL}/clients/active-by-department?department=Backlink")
+            self.log(f"Active Backlink clients response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Get active Backlink clients failed: {response.text}", "ERROR")
+                return False
+                
+            backlink_clients = response.json()
+            self.log(f"Found {len(backlink_clients)} active Backlink clients")
+            
+            # Verify all returned clients have service=Backlink
+            for client in backlink_clients:
+                if client.get('service') != 'Backlink':
+                    self.log(f"Non-Backlink client returned: {client.get('service')}", "ERROR")
+                    return False
+            
+            self.log("Active clients by department API working correctly")
+            return True
+            
+        except Exception as e:
+            self.log(f"Active clients by department test error: {str(e)}", "ERROR")
+            return False
+    
+    def test_contractor_new_fields(self):
+        """Test Contractor with New Fields - gender, department=Backlink, projects"""
+        self.log("=== Testing Contractor New Fields ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        try:
+            # Step 1: Create a contractor with new fields
+            self.log("Step 1: Creating contractor with new fields...")
+            contractor_data = {
+                "name": "Test Contractor",
+                "doj": "2025-01-01",
+                "start_date": "2025-01-01",
+                "tenure_months": 12,
+                "dob": "1990-05-15",
+                "gender": "Male",
+                "pan": "ABCDE1234F",
+                "aadhar": "123456789012",
+                "mobile": "9876543210",
+                "personal_email": "contractor@test.com",
+                "bank_name": "Test Bank",
+                "account_holder": "Test Contractor",
+                "account_no": "1234567890",
+                "ifsc": "TEST0001234",
+                "address_1": "123 Test Street",
+                "pincode": "110001",
+                "city": "Test City",
+                "address_2": "Near Test Market",
+                "department": "Backlink",
+                "projects": [],
+                "monthly_retainer_inr": 50000,
+                "designation": "Backlink Specialist",
+                "approver_user_id": self.user_info.get('id')
+            }
+            
+            response = self.session.post(f"{BASE_URL}/contractors", json=contractor_data)
+            self.log(f"Create contractor response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Contractor creation failed: {response.text}", "ERROR")
+                return False
+                
+            created_contractor = response.json()
+            contractor_id = created_contractor.get('id')
+            self.created_contractors.append(contractor_id)
+            self.log(f"Contractor created successfully. ID: {contractor_id}")
+            
+            # Verify new fields are set correctly
+            if created_contractor.get('gender') != 'Male':
+                self.log(f"Gender not set correctly. Expected: Male, Got: {created_contractor.get('gender')}", "ERROR")
+                return False
+                
+            if created_contractor.get('department') != 'Backlink':
+                self.log(f"Department not set correctly. Expected: Backlink, Got: {created_contractor.get('department')}", "ERROR")
+                return False
+                
+            if created_contractor.get('projects') != []:
+                self.log(f"Projects not set correctly. Expected: [], Got: {created_contractor.get('projects')}", "ERROR")
+                return False
+            
+            # Step 2: Update contractor to add projects list with some client IDs
+            self.log("Step 2: Updating contractor to add projects...")
+            
+            # Get some client IDs first
+            response = self.session.get(f"{BASE_URL}/clients")
+            if response.status_code == 200:
+                clients = response.json()
+                client_ids = [c.get('id') for c in clients[:2]]  # Take first 2 clients
+            else:
+                client_ids = ["client_123", "client_456"]  # Use dummy IDs if no clients
+            
+            update_data = {"projects": client_ids}
+            response = self.session.patch(f"{BASE_URL}/contractors/{contractor_id}", json=update_data)
+            self.log(f"Update contractor response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Contractor update failed: {response.text}", "ERROR")
+                return False
+                
+            self.log(f"Contractor projects updated successfully with {len(client_ids)} projects")
+            
+            # Step 3: Verify the fields are stored correctly
+            self.log("Step 3: Verifying contractor fields...")
+            response = self.session.get(f"{BASE_URL}/contractors")
+            if response.status_code != 200:
+                self.log(f"Get contractors failed: {response.text}", "ERROR")
+                return False
+                
+            contractors = response.json()
+            found_contractor = next((c for c in contractors if c.get('id') == contractor_id), None)
+            
+            if not found_contractor:
+                self.log("Created contractor not found", "ERROR")
+                return False
+                
+            if found_contractor.get('gender') != 'Male':
+                self.log(f"Gender verification failed. Expected: Male, Got: {found_contractor.get('gender')}", "ERROR")
+                return False
+                
+            if found_contractor.get('department') != 'Backlink':
+                self.log(f"Department verification failed. Expected: Backlink, Got: {found_contractor.get('department')}", "ERROR")
+                return False
+                
+            if len(found_contractor.get('projects', [])) != len(client_ids):
+                self.log(f"Projects verification failed. Expected: {len(client_ids)}, Got: {len(found_contractor.get('projects', []))}", "ERROR")
+                return False
+            
+            self.log("Contractor new fields verified successfully")
+            return True
+            
+        except Exception as e:
+            self.log(f"Contractor new fields test error: {str(e)}", "ERROR")
+            return False
+    
+    def test_employee_new_fields(self):
+        """Test Employee with New Fields - gender, department=Backlink, projects"""
+        self.log("=== Testing Employee New Fields ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        try:
+            # Step 1: Create an employee with new fields
+            self.log("Step 1: Creating employee with new fields...")
+            employee_data = {
+                "doj": "2025-01-15",
+                "work_email": "employee@company.com",
+                "emp_id": "EMP001",
+                "first_name": "Test",
+                "last_name": "Employee",
+                "father_name": "Test Father",
+                "dob": "1995-03-20",
+                "gender": "Female",
+                "mobile": "9876543210",
+                "personal_email": "employee.personal@test.com",
+                "pan": "ABCDE1234F",
+                "aadhar": "123456789012",
+                "uan": "UAN123456",
+                "pf_account_no": "PF123456",
+                "bank_name": "Test Bank",
+                "account_no": "1234567890",
+                "ifsc": "TEST0001234",
+                "branch": "Main Branch",
+                "address": "123 Test Street",
+                "pincode": "110001",
+                "city": "Test City",
+                "monthly_gross_inr": 60000,
+                "department": "Backlink",
+                "projects": [],
+                "approver_user_id": self.user_info.get('id')
+            }
+            
+            response = self.session.post(f"{BASE_URL}/employees", json=employee_data)
+            self.log(f"Create employee response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Employee creation failed: {response.text}", "ERROR")
+                return False
+                
+            created_employee = response.json()
+            employee_id = created_employee.get('id')
+            self.created_employees.append(employee_id)
+            self.log(f"Employee created successfully. ID: {employee_id}")
+            
+            # Verify new fields are set correctly
+            if created_employee.get('gender') != 'Female':
+                self.log(f"Gender not set correctly. Expected: Female, Got: {created_employee.get('gender')}", "ERROR")
+                return False
+                
+            if created_employee.get('department') != 'Backlink':
+                self.log(f"Department not set correctly. Expected: Backlink, Got: {created_employee.get('department')}", "ERROR")
+                return False
+                
+            if created_employee.get('projects') != []:
+                self.log(f"Projects not set correctly. Expected: [], Got: {created_employee.get('projects')}", "ERROR")
+                return False
+            
+            # Step 2: Update employee to add projects list with some client IDs
+            self.log("Step 2: Updating employee to add projects...")
+            
+            # Get some client IDs first
+            response = self.session.get(f"{BASE_URL}/clients")
+            if response.status_code == 200:
+                clients = response.json()
+                client_ids = [c.get('id') for c in clients[:2]]  # Take first 2 clients
+            else:
+                client_ids = ["client_789", "client_012"]  # Use dummy IDs if no clients
+            
+            update_data = {"projects": client_ids}
+            response = self.session.patch(f"{BASE_URL}/employees/{employee_id}", json=update_data)
+            self.log(f"Update employee response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Employee update failed: {response.text}", "ERROR")
+                return False
+                
+            self.log(f"Employee projects updated successfully with {len(client_ids)} projects")
+            
+            # Step 3: Verify the fields are stored correctly
+            self.log("Step 3: Verifying employee fields...")
+            response = self.session.get(f"{BASE_URL}/employees")
+            if response.status_code != 200:
+                self.log(f"Get employees failed: {response.text}", "ERROR")
+                return False
+                
+            employees = response.json()
+            found_employee = next((e for e in employees if e.get('id') == employee_id), None)
+            
+            if not found_employee:
+                self.log("Created employee not found", "ERROR")
+                return False
+                
+            if found_employee.get('gender') != 'Female':
+                self.log(f"Gender verification failed. Expected: Female, Got: {found_employee.get('gender')}", "ERROR")
+                return False
+                
+            if found_employee.get('department') != 'Backlink':
+                self.log(f"Department verification failed. Expected: Backlink, Got: {found_employee.get('department')}", "ERROR")
+                return False
+                
+            if len(found_employee.get('projects', [])) != len(client_ids):
+                self.log(f"Projects verification failed. Expected: {len(client_ids)}, Got: {len(found_employee.get('projects', []))}", "ERROR")
+                return False
+            
+            self.log("Employee new fields verified successfully")
+            return True
+            
+        except Exception as e:
+            self.log(f"Employee new fields test error: {str(e)}", "ERROR")
+            return False
+    
+    def test_dashboard_summary(self):
+        """Test Dashboard Summary - verify expired_agreements, revenue/employees/contractors have Backlink key"""
+        self.log("=== Testing Dashboard Summary ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        try:
+            # GET /api/dashboard/summary
+            self.log("Testing dashboard summary endpoint...")
+            response = self.session.get(f"{BASE_URL}/dashboard/summary")
+            self.log(f"Dashboard summary response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Dashboard summary failed: {response.text}", "ERROR")
+                return False
+                
+            dashboard_data = response.json()
+            
+            # Verify response structure
+            if 'alerts' not in dashboard_data:
+                self.log("Missing 'alerts' in dashboard response", "ERROR")
+                return False
+                
+            if 'revenue' not in dashboard_data:
+                self.log("Missing 'revenue' in dashboard response", "ERROR")
+                return False
+                
+            if 'employees' not in dashboard_data:
+                self.log("Missing 'employees' in dashboard response", "ERROR")
+                return False
+                
+            if 'contractors' not in dashboard_data:
+                self.log("Missing 'contractors' in dashboard response", "ERROR")
+                return False
+            
+            # Verify alerts.expired_agreements array exists
+            alerts = dashboard_data.get('alerts', {})
+            if 'expired_agreements' not in alerts:
+                self.log("Missing 'expired_agreements' in alerts", "ERROR")
+                return False
+                
+            expired_agreements = alerts.get('expired_agreements', [])
+            self.log(f"Found {len(expired_agreements)} expired agreements")
+            
+            # Verify revenue object has "Backlink" key
+            revenue = dashboard_data.get('revenue', {})
+            if 'Backlink' not in revenue:
+                self.log("Missing 'Backlink' key in revenue object", "ERROR")
+                return False
+                
+            backlink_revenue = revenue.get('Backlink', {})
+            self.log(f"Backlink revenue: count={backlink_revenue.get('count', 0)}, amount={backlink_revenue.get('amount', 0)}")
+            
+            # Verify employees object has "Backlink" key
+            employees = dashboard_data.get('employees', {})
+            if 'Backlink' not in employees:
+                self.log("Missing 'Backlink' key in employees object", "ERROR")
+                return False
+                
+            backlink_employees = employees.get('Backlink', {})
+            self.log(f"Backlink employees: count={backlink_employees.get('count', 0)}, cost={backlink_employees.get('cost', 0)}")
+            
+            # Verify contractors object has "Backlink" key
+            contractors = dashboard_data.get('contractors', {})
+            if 'Backlink' not in contractors:
+                self.log("Missing 'Backlink' key in contractors object", "ERROR")
+                return False
+                
+            backlink_contractors = contractors.get('Backlink', {})
+            self.log(f"Backlink contractors: count={backlink_contractors.get('count', 0)}, cost={backlink_contractors.get('cost', 0)}")
+            
+            self.log("Dashboard summary structure verified successfully")
+            return True
+            
+        except Exception as e:
+            self.log(f"Dashboard summary test error: {str(e)}", "ERROR")
             return False
     
     def test_sample_template_download(self):
