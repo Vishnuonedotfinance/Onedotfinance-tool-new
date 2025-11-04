@@ -18,8 +18,10 @@ class BackendTester:
     def __init__(self):
         self.token = None
         self.user_info = None
-        self.org_id = None
-        self.created_assets = []
+        self.created_users = []
+        self.created_clients = []
+        self.created_contractors = []
+        self.created_employees = []
         self.session = requests.Session()
         
     def log(self, message, level="INFO"):
