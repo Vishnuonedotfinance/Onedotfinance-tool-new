@@ -244,9 +244,10 @@ export default function EmployeeDatabase({ user }) {
                   <td>
                     <div className="action-buttons">
                       <button 
-                        className="btn-icon" 
+                        className="btn-icon"
+                        onClick={() => handleEdit(employee)}
                         data-testid={`view-employee-${employee.id}`}
-                        title="View"
+                        title="Edit"
                       >
                         <Edit size={16} />
                       </button>
