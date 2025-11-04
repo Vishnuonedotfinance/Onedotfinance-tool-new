@@ -64,7 +64,12 @@ export default function Reports() {
 
   // Client-level Profitability
   const calculateClientProfitability = () => {
-    return clients.map(client => {
+    let filteredClients = clients;
+    if (clientProfitDeptFilter) {
+      filteredClients = clients.filter(c => c.service === clientProfitDeptFilter);
+    }
+    
+    return filteredClients.map(client => {
       // Get resources working on this client
       const clientEmployees = employees.filter(e => 
         e.projects && e.projects.includes(client.id)
@@ -91,13 +96,18 @@ export default function Reports() {
         totalCost += cost;
       });
 
+      const revenue = client.amount_inr || 0;
+      const profit = revenue - totalCost;
+      const profitPercent = revenue > 0 ? ((profit / revenue) * 100).toFixed(2) : 0;
+
       return {
         client_name: client.client_name,
         department: client.service,
-        revenue: client.amount_inr || 0,
+        revenue,
         resources,
         totalCost,
-        profit: (client.amount_inr || 0) - totalCost
+        profit,
+        profitPercent
       };
     });
   };
