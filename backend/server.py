@@ -463,6 +463,26 @@ async def update_user(user_id: str, role: str = None, status: str = None, curren
     await db.users.update_one({"id": user_id}, {"$set": update_data})
     return {"message": "User updated successfully"}
 
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'Admin':
+        raise HTTPException(status_code=403, detail="Only Admin can delete users")
+    
+    # Check if user being deleted is admin
+    user_to_delete = await db.users.find_one({"id": user_id})
+    if not user_to_delete:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user_to_delete.get('role') == 'Admin':
+        raise HTTPException(status_code=403, detail="Cannot delete Admin user")
+    
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "User deleted successfully"}
+
+
 # ============= CLIENT ROUTES =============
 
 @api_router.get("/clients", response_model=List[Client])
