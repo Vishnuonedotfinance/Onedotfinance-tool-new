@@ -113,20 +113,65 @@ user_problem_statement: |
   7. Update Client service dropdown to PPC, SEO, Content, Backlink
 
 backend:
-  - task: "Asset Tracker CRUD operations"
+  - task: "Department Updates - Add Backlink"
     implemented: true
-    working: true
-    file: "/app/backend/server.py (lines 1525-1577)"
+    working: "NA"
+    file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implemented GET, POST, PATCH, DELETE routes for assets with department filtering and warranty status calculation"
-      - working: true
-        agent: "testing"
-        comment: "✅ CRUD operations working correctly. Tested: CREATE asset (200), GET all assets (200), GET with department filter (200), UPDATE asset (200), DELETE asset (200 for Admin role). Warranty status calculation working correctly (Active/Expired based on purchase date + warranty period). Routes are at /api/assets/* not /api/org/{id}/assets/* as mentioned in review request."
+        comment: "Added 'Backlink' to all department literals across Client service, Contractor, Employee, and Asset models"
+  
+  - task: "Contractor & Employee New Fields"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added gender (Male/Female/Other) and projects (List[str]) fields to both Contractor and Employee models"
+  
+  - task: "Dashboard Enhancements"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py (lines 1015-1151)"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added expired_agreements section. Expanded department metrics from 5 to 6 (added Backlink). Shows client count alongside revenue for each department"
+  
+  - task: "User Delete API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added DELETE /api/users/{user_id} endpoint with Admin-only access and protection for Admin role"
+  
+  - task: "Active Clients by Department API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added GET /api/clients/active-by-department?department=X for dynamic project selection"
 
   - task: "Asset Import/Export functionality"
     implemented: true
