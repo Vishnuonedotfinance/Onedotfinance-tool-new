@@ -531,7 +531,7 @@ export default function EmployeeDatabase({ user }) {
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary" data-testid="save-employee-button">
-                  Save Employee
+                  {editMode ? 'Update Employee' : 'Save Employee'}
                 </button>
               </div>
             </form>
