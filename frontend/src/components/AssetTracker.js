@@ -104,6 +104,49 @@ export default function AssetTracker() {
     }
   };
 
+  const handleDownloadSample = async () => {
+    try {
+      const response = await api.get('/assets/sample', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'asset_sample.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Sample template downloaded');
+    } catch (error) {
+      toast.error('Failed to download sample');
+    }
+  };
+
+  const handleImport = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await api.post('/assets/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      toast.success(response.data.message);
+      if (response.data.errors && response.data.errors.length > 0) {
+        console.log('Import errors:', response.data.errors);
+        toast.warning(`${response.data.errors.length} rows had errors. Check console for details.`);
+      }
+      loadAssets();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to import assets');
+    }
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       asset_type: '',
