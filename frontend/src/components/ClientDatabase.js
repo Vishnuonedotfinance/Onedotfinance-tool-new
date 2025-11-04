@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../App';
 import { toast } from 'sonner';
-import { Plus, Edit, Download, Trash2 } from 'lucide-react';
+import { Plus, Edit, Download, Trash2, Upload, FileDown } from 'lucide-react';
 import FilterSort from './FilterSort';
 
 export default function ClientDatabase({ user }) {
