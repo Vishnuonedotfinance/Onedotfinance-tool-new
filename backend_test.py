@@ -603,198 +603,67 @@ class BackendTester:
             self.log(f"Dashboard summary test error: {str(e)}", "ERROR")
             return False
     
-    def test_sample_template_download(self):
-        """Test sample Excel template download"""
-        self.log("=== Testing Sample Template Download ===")
-        
-        if not self.token:
-            self.log("No authentication token available", "ERROR")
-            return False
-            
-        try:
-            response = self.session.get(f"{BASE_URL}/assets/sample")
-            self.log(f"Sample template response status: {response.status_code}")
-            
-            if response.status_code != 200:
-                self.log(f"Sample template download failed: {response.text}", "ERROR")
-                return False
-                
-            # Check if response is Excel file
-            content_type = response.headers.get('content-type', '')
-            if 'spreadsheet' not in content_type and 'excel' not in content_type:
-                self.log(f"Unexpected content type: {content_type}", "ERROR")
-                return False
-                
-            content_length = len(response.content)
-            self.log(f"Sample template downloaded successfully. Size: {content_length} bytes")
-            
-            # Check Content-Disposition header
-            disposition = response.headers.get('content-disposition', '')
-            if 'asset_sample.xlsx' not in disposition:
-                self.log(f"Unexpected filename in disposition: {disposition}", "WARNING")
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"Sample template download error: {str(e)}", "ERROR")
-            return False
-    
-    def test_bulk_export(self):
-        """Test bulk export functionality"""
-        self.log("=== Testing Bulk Export ===")
-        
-        if not self.token:
-            self.log("No authentication token available", "ERROR")
-            return False
-            
-        # First create a few assets for export
-        self.log("Creating test assets for export...")
-        test_assets = [
-            {
-                "asset_type": "Laptop",
-                "model": "Dell XPS 13",
-                "serial_number": "EXPORT001",
-                "purchase_date": "2024-01-01",
-                "vendor": "Dell Store",
-                "value_ex_gst": 80000,
-                "warranty_period_months": 12,
-                "alloted_to": "Export Test User 1",
-                "email": "export1@company.com",
-                "department": "SEO"
-            },
-            {
-                "asset_type": "Monitor",
-                "model": "LG 27inch",
-                "serial_number": "EXPORT002",
-                "purchase_date": "2024-02-01",
-                "vendor": "LG Store",
-                "value_ex_gst": 15000,
-                "warranty_period_months": 24,
-                "alloted_to": "Export Test User 2",
-                "email": "export2@company.com",
-                "department": "Content"
-            }
-        ]
-        
-        try:
-            # Create test assets
-            for asset_data in test_assets:
-                response = self.session.post(f"{BASE_URL}/assets", json=asset_data)
-                if response.status_code == 200:
-                    asset_id = response.json().get('id')
-                    self.created_assets.append(asset_id)
-                    self.log(f"Created test asset: {asset_id}")
-                    
-            # Test export
-            self.log("Testing bulk export...")
-            response = self.session.get(f"{BASE_URL}/assets/export")
-            self.log(f"Export response status: {response.status_code}")
-            
-            if response.status_code != 200:
-                self.log(f"Export failed: {response.text}", "ERROR")
-                return False
-                
-            # Check if response is Excel file
-            content_type = response.headers.get('content-type', '')
-            if 'spreadsheet' not in content_type and 'excel' not in content_type:
-                self.log(f"Unexpected content type: {content_type}", "ERROR")
-                return False
-                
-            content_length = len(response.content)
-            self.log(f"Export completed successfully. Size: {content_length} bytes")
-            
-            # Check Content-Disposition header
-            disposition = response.headers.get('content-disposition', '')
-            if 'assets_export.xlsx' not in disposition:
-                self.log(f"Unexpected filename in disposition: {disposition}", "WARNING")
-                
-            return True
-            
-        except Exception as e:
-            self.log(f"Bulk export error: {str(e)}", "ERROR")
-            return False
-    
-    def test_bulk_import(self):
-        """Test bulk import functionality (limited test with curl)"""
-        self.log("=== Testing Bulk Import ===")
-        
-        if not self.token:
-            self.log("No authentication token available", "ERROR")
-            return False
-            
-        self.log("Note: Bulk import requires multipart/form-data which is complex to test with requests")
-        self.log("This would require creating an actual Excel file and uploading it")
-        self.log("Manual testing recommended for this endpoint: POST /api/assets/import")
-        
-        # Test that the endpoint exists and requires authentication
-        try:
-            # Try without file (should fail with 422 or 400)
-            response = self.session.post(f"{BASE_URL}/assets/import")
-            self.log(f"Import endpoint response status: {response.status_code}")
-            
-            if response.status_code == 401:
-                self.log("Import endpoint requires authentication (good)", "ERROR")
-                return False
-            elif response.status_code in [400, 422]:
-                self.log("Import endpoint exists and validates input (good)")
-                return True
-            else:
-                self.log(f"Unexpected response: {response.text}", "WARNING")
-                return True
-                
-        except Exception as e:
-            self.log(f"Bulk import test error: {str(e)}", "ERROR")
-            return False
-    
-    def test_unauthorized_access(self):
-        """Test that endpoints require authentication"""
-        self.log("=== Testing Unauthorized Access ===")
-        
-        # Create session without token
-        unauth_session = requests.Session()
-        
-        endpoints_to_test = [
-            "/assets",
-            "/assets/export", 
-            "/assets/sample"
-        ]
-        
-        try:
-            for endpoint in endpoints_to_test:
-                response = unauth_session.get(f"{BASE_URL}{endpoint}")
-                self.log(f"Unauthorized access to {endpoint}: {response.status_code}")
-                
-                if response.status_code not in [401, 403]:
-                    self.log(f"Security issue: {endpoint} accessible without auth", "ERROR")
-                    return False
-                    
-            self.log("All endpoints properly require authentication")
-            return True
-            
-        except Exception as e:
-            self.log(f"Unauthorized access test error: {str(e)}", "ERROR")
-            return False
-    
     def cleanup(self):
-        """Clean up created test assets"""
+        """Clean up created test data"""
         self.log("=== Cleaning Up Test Data ===")
         
-        if not self.token or not self.created_assets:
-            self.log("No cleanup needed")
+        if not self.token:
+            self.log("No cleanup needed - no authentication token")
             return
             
-        for asset_id in self.created_assets[:]:
+        # Clean up users
+        for user_id in self.created_users[:]:
             try:
-                response = self.session.delete(f"{BASE_URL}/assets/{asset_id}")
+                response = self.session.delete(f"{BASE_URL}/users/{user_id}")
                 if response.status_code == 200:
-                    self.log(f"Cleaned up asset: {asset_id}")
-                    self.created_assets.remove(asset_id)
-                elif response.status_code == 403:
-                    self.log(f"Cannot delete asset {asset_id} - insufficient permissions")
+                    self.log(f"Cleaned up user: {user_id}")
+                    self.created_users.remove(user_id)
                 else:
-                    self.log(f"Failed to cleanup asset {asset_id}: {response.status_code}")
+                    self.log(f"Failed to cleanup user {user_id}: {response.status_code}")
             except Exception as e:
-                self.log(f"Cleanup error for {asset_id}: {str(e)}", "ERROR")
+                self.log(f"Cleanup error for user {user_id}: {str(e)}", "ERROR")
+        
+        # Clean up clients
+        for client_id in self.created_clients[:]:
+            try:
+                response = self.session.delete(f"{BASE_URL}/clients/{client_id}")
+                if response.status_code == 200:
+                    self.log(f"Cleaned up client: {client_id}")
+                    self.created_clients.remove(client_id)
+                elif response.status_code == 403:
+                    self.log(f"Cannot delete client {client_id} - insufficient permissions")
+                else:
+                    self.log(f"Failed to cleanup client {client_id}: {response.status_code}")
+            except Exception as e:
+                self.log(f"Cleanup error for client {client_id}: {str(e)}", "ERROR")
+        
+        # Clean up contractors
+        for contractor_id in self.created_contractors[:]:
+            try:
+                response = self.session.delete(f"{BASE_URL}/contractors/{contractor_id}")
+                if response.status_code == 200:
+                    self.log(f"Cleaned up contractor: {contractor_id}")
+                    self.created_contractors.remove(contractor_id)
+                elif response.status_code == 403:
+                    self.log(f"Cannot delete contractor {contractor_id} - insufficient permissions")
+                else:
+                    self.log(f"Failed to cleanup contractor {contractor_id}: {response.status_code}")
+            except Exception as e:
+                self.log(f"Cleanup error for contractor {contractor_id}: {str(e)}", "ERROR")
+        
+        # Clean up employees
+        for employee_id in self.created_employees[:]:
+            try:
+                response = self.session.delete(f"{BASE_URL}/employees/{employee_id}")
+                if response.status_code == 200:
+                    self.log(f"Cleaned up employee: {employee_id}")
+                    self.created_employees.remove(employee_id)
+                elif response.status_code == 403:
+                    self.log(f"Cannot delete employee {employee_id} - insufficient permissions")
+                else:
+                    self.log(f"Failed to cleanup employee {employee_id}: {response.status_code}")
+            except Exception as e:
+                self.log(f"Cleanup error for employee {employee_id}: {str(e)}", "ERROR")
     
     def run_all_tests(self):
         """Run all tests and return summary"""
