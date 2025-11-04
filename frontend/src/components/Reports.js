@@ -9,6 +9,8 @@ export default function Reports() {
   const [employees, setEmployees] = useState([]);
   const [contractors, setContractors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [clientProfitDeptFilter, setClientProfitDeptFilter] = useState('');
+  const [resourceUtilDeptFilter, setResourceUtilDeptFilter] = useState('');
 
   useEffect(() => {
     loadData();
