@@ -14,6 +14,7 @@ export default function ClientDatabase({ user }) {
   const [sortBy, setSortBy] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('');
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     client_name: '',
     address: '',
