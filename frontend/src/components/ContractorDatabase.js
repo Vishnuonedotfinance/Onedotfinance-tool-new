@@ -507,13 +507,34 @@ export default function ContractorDatabase({ user }) {
                   </div>
                   <div className="form-group">
                     <label>Department *</label>
-                    <select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} data-testid="department-select">
+                    <select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value, projects: [] })} data-testid="department-select">
                       <option value="PPC">PPC</option>
                       <option value="SEO">SEO</option>
                       <option value="Content">Content</option>
+                      <option value="Backlink">Backlink</option>
                       <option value="Business Development">Business Development</option>
                       <option value="Others">Others</option>
                     </select>
+                  </div>
+                  <div className="form-group form-group-full">
+                    <label>Projects (Multiple Select)</label>
+                    <select 
+                      multiple 
+                      value={formData.projects} 
+                      onChange={(e) => {
+                        const selected = Array.from(e.target.selectedOptions, option => option.value);
+                        setFormData({ ...formData, projects: selected });
+                      }}
+                      data-testid="projects-select"
+                      style={{ minHeight: '100px' }}
+                    >
+                      {availableClients.map(client => (
+                        <option key={client.id} value={client.id}>
+                          {client.client_name}
+                        </option>
+                      ))}
+                    </select>
+                    <small style={{ color: '#6b7280', fontSize: '0.875rem' }}>Hold Ctrl/Cmd to select multiple</small>
                   </div>
                   <div className="form-group">
                     <label>Monthly Retainer (INR) *</label>
