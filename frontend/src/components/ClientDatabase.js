@@ -384,6 +384,11 @@ export default function ClientDatabase({ user }) {
                   </td>
                 </tr>
               ))}
+              <tr style={{ backgroundColor: '#f3f4f6', fontWeight: '600', borderTop: '2px solid #9ca3af' }}>
+                <td colSpan="5" style={{ textAlign: 'right' }}>Total:</td>
+                <td>₹{clients.reduce((sum, c) => sum + (c.amount_inr || 0), 0).toLocaleString()}</td>
+                <td colSpan="4"></td>
+              </tr>
             </tbody>
           </table>
         </div>
