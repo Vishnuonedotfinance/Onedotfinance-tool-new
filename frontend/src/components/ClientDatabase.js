@@ -225,11 +225,38 @@ export default function ClientDatabase({ user }) {
       <div className="table-container">
         <div className="table-header">
           <h2>Client Database</h2>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              className="btn-secondary"
+              onClick={handleDownloadSample}
+              data-testid="download-sample-button"
+              title="Download Sample Template"
+            >
+              <FileDown size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Sample
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => fileInputRef.current?.click()}
+              data-testid="import-clients-button"
+              title="Import from Excel"
+            >
+              <Upload size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Import
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleImport}
+              style={{ display: 'none' }}
+              data-testid="file-input"
+            />
             <button
               className="btn-secondary"
               onClick={handleExport}
               data-testid="export-clients-button"
+              title="Export to Excel"
             >
               <Download size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
               Export
