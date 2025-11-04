@@ -180,10 +180,13 @@ export default function ClientDatabase({ user }) {
       <div className="table-container">
         <div className="table-header">
           <h2>Client Database</h2>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <FilterSort
               onSortChange={setSortBy}
-              onFilterChange={setFilterStatus}
+              onFilterChange={(type, value) => {
+                if (type === 'status') setFilterStatus(value);
+                if (type === 'department') setFilterDepartment(value);
+              }}
               sortOptions={[
                 { value: 'client_name_asc', label: 'Name (A-Z)' },
                 { value: 'client_name_desc', label: 'Name (Z-A)' },
@@ -191,15 +194,30 @@ export default function ClientDatabase({ user }) {
                 { value: 'start_date_asc', label: 'Date (Oldest)' }
               ]}
               filterOptions={[
-                { value: 'Active', label: 'Active' },
-                { value: 'Churned', label: 'Churned' }
+                { type: 'status', label: 'Status', options: [
+                  { value: 'Active', label: 'Active' },
+                  { value: 'Churned', label: 'Churned' }
+                ]},
+                { type: 'department', label: 'Service', options: [
+                  { value: 'PPC', label: 'PPC' },
+                  { value: 'SEO', label: 'SEO' },
+                  { value: 'Both', label: 'Both' }
+                ]}
               ]}
               currentSort={sortBy}
-              currentFilter={filterStatus}
+              currentFilters={{ status: filterStatus, department: filterDepartment }}
             />
             <button
+              className="btn-secondary"
+              onClick={handleExport}
+              data-testid="export-clients-button"
+            >
+              <Download size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
+              Export
+            </button>
+            <button
               className="btn-success"
-              onClick={() => setShowModal(true)}
+              onClick={() => { setEditMode(false); setShowModal(true); }}
               data-testid="add-client-button"
             >
               <Plus size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
