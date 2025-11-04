@@ -53,6 +53,23 @@ export default function Users({ user }) {
     }
   };
 
+  const handleDelete = async (userId, userName, userRole) => {
+    if (userRole === 'Admin') {
+      toast.error('Cannot delete Admin user');
+      return;
+    }
+    
+    if (window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+      try {
+        await api.delete(`/users/${userId}`);
+        toast.success('User deleted successfully');
+        loadUsers();
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to delete user');
+      }
+    }
+  };
+
   if (user.role !== 'Admin') {
     return <div>Access denied. Admin only.</div>;
   }
