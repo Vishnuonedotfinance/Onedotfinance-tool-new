@@ -146,6 +146,16 @@ export default function Layout({ children, user, onLogout }) {
             <BarChart3 /> Reports
           </Link>
 
+          {user.role === 'Admin' && (
+            <Link
+              to="/settings"
+              className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`}
+              data-testid="nav-settings"
+            >
+              <SettingsIcon /> Settings
+            </Link>
+          )}
+
           <a
             href="https://www.zoho.com/payroll/"
             target="_blank"
