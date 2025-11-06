@@ -253,10 +253,9 @@ export default function ClientDatabase({ user }) {
               data-testid="department-filter"
             >
               <option value="">All Services</option>
-              <option value="PPC">PPC</option>
-              <option value="SEO">SEO</option>
-              <option value="Content">Content</option>
-              <option value="Backlink">Backlink</option>
+              {services.map(service => (
+                <option key={service.id} value={service.name}>{service.name}</option>
+              ))}
             </select>
 
             {/* Status Filter */}
