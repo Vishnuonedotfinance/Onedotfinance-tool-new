@@ -48,6 +48,7 @@ export default function EmployeeDatabase({ user }) {
   useEffect(() => {
     loadEmployees();
     loadUsers();
+    loadServices();
   }, [sortBy, filterStatus, filterDepartment]);
 
   useEffect(() => {
