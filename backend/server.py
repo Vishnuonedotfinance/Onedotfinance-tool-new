@@ -1519,28 +1519,34 @@ async def get_employee_sample(current_user: dict = Depends(get_current_user)):
 @api_router.get("/assets/sample")
 async def get_asset_sample(current_user: dict = Depends(get_current_user)):
     """Download sample Excel template for bulk upload"""
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Assets"
+    # Use pandas to create a proper DataFrame-based Excel file
+    sample_data = {
+        'asset_type': ['Laptop', 'Monitor', 'Keyboard'],
+        'model': ['Dell XPS 15', 'LG 27inch 4K', 'Logitech MX Keys'],
+        'serial_number': ['SN123456', 'SN789012', 'SN345678'],
+        'purchase_date': ['2024-01-15', '2024-02-01', '2024-03-10'],
+        'vendor': ['Dell India', 'LG Store', 'Amazon'],
+        'value_ex_gst': [75000.0, 15000.0, 8500.0],
+        'warranty_period_months': [12, 24, 12],
+        'alloted_to': ['John Doe', 'Jane Smith', 'Bob Wilson'],
+        'email': ['john.doe@example.com', 'jane.smith@example.com', 'bob.wilson@example.com'],
+        'department': ['PPC', 'SEO', 'Content']
+    }
     
-    headers = ['asset_type', 'model', 'serial_number', 'purchase_date', 'vendor', 
-               'value_ex_gst', 'warranty_period_months', 'alloted_to', 'email', 'department']
-    
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col, value=header)
-        cell.font = Font(bold=True)
-        cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
-    
-    # Add sample data with proper date format YYYY-MM-DD
-    ws.append(['Laptop', 'Dell XPS 15', 'SN123456', '2024-01-15', 'Dell India', 
-               75000, 12, 'John Doe', 'john.doe@example.com', 'PPC'])
-    ws.append(['Monitor', 'LG 27inch 4K', 'SN789012', '2024-02-01', 'LG Store', 
-               15000, 24, 'Jane Smith', 'jane.smith@example.com', 'SEO'])
-    ws.append(['Keyboard', 'Logitech MX Keys', 'SN345678', '2024-03-10', 'Amazon', 
-               8500, 12, 'Bob Wilson', 'bob.wilson@example.com', 'Content'])
+    df = pd.DataFrame(sample_data)
     
     output = BytesIO()
-    wb.save(output)
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Assets')
+        
+        # Format the header row
+        workbook = writer.book
+        worksheet = writer.sheets['Assets']
+        
+        for cell in worksheet[1]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
+    
     output.seek(0)
     
     return Response(
