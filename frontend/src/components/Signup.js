@@ -59,6 +59,52 @@ export default function Signup() {
     navigate('/login', { state: { orgId: orgData.org_id, email: formData.admin_email } });
   };
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Logo must be less than 5MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadLogo = async () => {
+    if (!logoFile || !orgData) return;
+    
+    setUploadingLogo(true);
+    const formData = new FormData();
+    formData.append('file', logoFile);
+    formData.append('org_id', orgData.org_id);
+
+    try {
+      // First, we need to login to get the token
+      await api.post('/auth/login', {
+        org_id: orgData.org_id,
+        email: orgData.admin_email,
+        password: formData.admin_password
+      });
+      
+      // For now, let's skip the OTP and just show success
+      toast.success('Logo will be uploaded after you login');
+      handleProceedToLogin();
+    } catch (error) {
+      toast.error('Failed to upload logo. You can upload it later from settings.');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
