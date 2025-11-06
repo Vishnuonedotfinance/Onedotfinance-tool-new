@@ -1525,28 +1525,52 @@ async def get_contractor_sample(current_user: dict = Depends(get_current_user)):
 @api_router.get("/employees/sample")
 async def get_employee_sample(current_user: dict = Depends(get_current_user)):
     """Download sample Excel template for bulk upload"""
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Employees"
+    # Get a valid Director/Admin user ID for the sample
+    approver = await db.users.find_one(
+        {"org_id": current_user['org_id'], "role": {"$in": ["Admin", "Director"]}},
+        {"id": 1}
+    )
+    approver_id = approver['id'] if approver else current_user['id']
     
-    headers = ['doj', 'work_email', 'emp_id', 'first_name', 'last_name', 'father_name', 
-               'dob', 'mobile', 'personal_email', 'pan', 'aadhar', 'uan', 'pf_account_no', 
-               'bank_name', 'account_no', 'ifsc', 'branch', 'address', 'pincode', 'city', 
-               'monthly_gross_inr', 'department', 'approver_user_id']
+    sample_data = {
+        'doj': ['2025-01-15', '2025-02-01'],
+        'work_email': ['john.doe@company.com', 'jane.smith@company.com'],
+        'emp_id': ['EMP001', 'EMP002'],
+        'first_name': ['John', 'Jane'],
+        'last_name': ['Doe', 'Smith'],
+        'father_name': ['James Doe', 'Robert Smith'],
+        'dob': ['1995-03-20', '1993-07-15'],
+        'mobile': ['9876543210', '9876543211'],
+        'personal_email': ['john.personal@email.com', 'jane.personal@email.com'],
+        'pan': ['ABCDE1234F', 'XYZAB5678C'],
+        'aadhar': ['123456789012', '987654321098'],
+        'uan': ['UAN123456', 'UAN789012'],
+        'pf_account_no': ['PF123456', 'PF789012'],
+        'bank_name': ['HDFC Bank', 'ICICI Bank'],
+        'account_no': ['1234567890', '0987654321'],
+        'ifsc': ['HDFC0001234', 'ICIC0005678'],
+        'branch': ['Main Branch', 'City Branch'],
+        'address': ['123 Street, Area', '456 Avenue, Sector'],
+        'pincode': ['110001', '110002'],
+        'city': ['Delhi', 'Mumbai'],
+        'monthly_gross_inr': [60000.0, 75000.0],
+        'department': ['PPC', 'SEO'],
+        'approver_user_id': [approver_id, approver_id]
+    }
     
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col, value=header)
-        cell.font = Font(bold=True)
-        cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
-    
-    ws.append(['2025-01-15', 'john@company.com', 'EMP001', 'John', 'Doe', 'James Doe', 
-               '1995-03-20', '9876543210', 'john.personal@email.com', 'ABCDE1234F', 
-               '123456789012', 'UAN123456', 'PF123456', 'Bank Name', '1234567890', 
-               'BANK0001234', 'Main Branch', '123 Street', '110001', 'Delhi', 
-               60000, 'PPC', 'user_id'])
+    df = pd.DataFrame(sample_data)
     
     output = BytesIO()
-    wb.save(output)
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Employees')
+        
+        workbook = writer.book
+        worksheet = writer.sheets['Employees']
+        
+        for cell in worksheet[1]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
+    
     output.seek(0)
     
     return Response(
