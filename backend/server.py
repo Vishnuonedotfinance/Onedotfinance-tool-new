@@ -1744,17 +1744,22 @@ async def import_assets(file: UploadFile = File(...), current_user: dict = Depen
         
         for index, row in df.iterrows():
             try:
+                # Convert purchase_date to proper format if it's a datetime object
+                purchase_date_str = str(row['purchase_date'])
+                if 'T' in purchase_date_str or ' ' in purchase_date_str:
+                    purchase_date_str = purchase_date_str.split('T')[0].split(' ')[0]
+                
                 asset_data = AssetCreate(
-                    asset_type=str(row['asset_type']),
-                    model=str(row['model']),
-                    serial_number=str(row['serial_number']),
-                    purchase_date=str(row['purchase_date'])[:10],
-                    vendor=str(row['vendor']),
+                    asset_type=str(row['asset_type']).strip(),
+                    model=str(row['model']).strip(),
+                    serial_number=str(row['serial_number']).strip(),
+                    purchase_date=purchase_date_str,
+                    vendor=str(row['vendor']).strip(),
                     value_ex_gst=float(row['value_ex_gst']),
                     warranty_period_months=int(row['warranty_period_months']),
-                    alloted_to=str(row['alloted_to']),
-                    email=str(row['email']),
-                    department=str(row['department'])
+                    alloted_to=str(row['alloted_to']).strip(),
+                    email=str(row['email']).strip(),
+                    department=str(row['department']).strip()
                 )
                 
                 asset = Asset(**asset_data.model_dump(), org_id=current_user['org_id'])
