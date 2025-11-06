@@ -1636,26 +1636,33 @@ async def import_clients(file: UploadFile = File(...), current_user: dict = Depe
         
         for index, row in df.iterrows():
             try:
+                # Handle start_date - could be datetime, date, or string
+                start_date_val = row['start_date']
+                if isinstance(start_date_val, (pd.Timestamp, datetime)):
+                    start_date_str = start_date_val.strftime('%Y-%m-%d')
+                else:
+                    start_date_str = str(start_date_val)[:10]
+                
                 # Create client object
                 client_data = ClientCreate(
-                    client_name=str(row['client_name']),
-                    address=str(row['address']),
-                    start_date=str(row['start_date'])[:10],
+                    client_name=str(row['client_name']).strip(),
+                    address=str(row['address']).strip(),
+                    start_date=start_date_str,
                     tenure_months=int(row['tenure_months']),
-                    currency_preference=str(row.get('currency_preference', 'INR')),
-                    service=str(row['service']),
+                    currency_preference=str(row.get('currency_preference', 'INR')).strip(),
+                    service=str(row['service']).strip(),
                     amount_inr=float(row['amount_inr']),
-                    authorised_signatory=str(row['authorised_signatory']),
-                    signatory_designation=str(row['signatory_designation']),
-                    gst=str(row['gst']),
-                    poc_name=str(row['poc_name']),
-                    poc_email=str(row['poc_email']),
-                    poc_designation=str(row['poc_designation']),
-                    poc_mobile=str(row['poc_mobile']),
-                    approver_user_id=str(row['approver_user_id'])
+                    authorised_signatory=str(row['authorised_signatory']).strip(),
+                    signatory_designation=str(row['signatory_designation']).strip(),
+                    gst=str(row['gst']).strip(),
+                    poc_name=str(row['poc_name']).strip(),
+                    poc_email=str(row['poc_email']).strip().lower(),
+                    poc_designation=str(row['poc_designation']).strip(),
+                    poc_mobile=str(row['poc_mobile']).strip(),
+                    approver_user_id=str(row['approver_user_id']).strip()
                 )
                 
-                client = Client(**client_data.model_dump())
+                client = Client(**client_data.model_dump(), org_id=current_user['org_id'])
                 client.end_date = calculate_end_date(client.start_date, client.tenure_months)
                 client.agreement_status = check_agreement_status(client.end_date)
                 
@@ -1663,7 +1670,9 @@ async def import_clients(file: UploadFile = File(...), current_user: dict = Depe
                 imported_count += 1
                 
             except Exception as e:
-                errors.append(f"Row {index + 2}: {str(e)}")
+                error_msg = f"Row {index + 2}: {str(e)}"
+                errors.append(error_msg)
+                print(f"Client import error: {error_msg}")
         
         return {
             "message": f"Import completed. {imported_count} clients imported successfully.",
