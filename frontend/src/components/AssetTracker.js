@@ -29,6 +29,7 @@ export default function AssetTracker() {
 
   useEffect(() => {
     loadAssets();
+    loadServices();
   }, []);
 
   useEffect(() => {
@@ -43,6 +44,18 @@ export default function AssetTracker() {
       toast.error('Failed to load assets');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadServices = async () => {
+    try {
+      const response = await api.get('/services');
+      setServices(response.data);
+      if (response.data.length > 0 && !formData.department) {
+        setFormData(prev => ({ ...prev, department: response.data[0].name }));
+      }
+    } catch (error) {
+      console.error('Failed to load services');
     }
   };
 
