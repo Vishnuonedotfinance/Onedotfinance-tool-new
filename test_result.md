@@ -392,15 +392,18 @@ frontend:
 
   - task: "Client Onboarding Module Frontend"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/ClientOnboarding.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created complete ClientOnboarding component with table view, CRUD operations, status dropdowns (Proposal Status: Sent/Approved/Rejected/In Negotiation, Onboarding Status: Not Onboarded/WIP/Onboarded), multi-service selection, currency support (INR/USD), approver assignment. Added navigation link and route."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Client Onboarding page loads correctly with proper table structure and 'New Onboarding' button. Modal opens and form can be filled with test data (Client Name, POC, Email, Services, Currency, Pricing, Approver). However, after form submission, no entries appear in the table. Form submission appears to succeed but data is not persisting or displaying. Backend API may be working but frontend-backend integration has issues."
 
   - task: "Consumables Module Frontend"
     implemented: true
