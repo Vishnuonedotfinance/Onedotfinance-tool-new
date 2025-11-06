@@ -470,12 +470,12 @@ export default function AssetTracker() {
                       value={formData.department}
                       onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                       data-testid="department-select"
+                      required
                     >
-                      <option value="PPC">PPC</option>
-                      <option value="SEO">SEO</option>
-                      <option value="Content">Content</option>
-                      <option value="Business Development">Business Development</option>
-                      <option value="Others">Others</option>
+                      <option value="">Select Department</option>
+                      {services.map(service => (
+                        <option key={service.id} value={service.name}>{service.name}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
