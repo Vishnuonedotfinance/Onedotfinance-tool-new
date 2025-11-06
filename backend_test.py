@@ -1238,6 +1238,9 @@ class BackendTester:
             test_results['consumables_module'] = self.test_consumables_module()
             test_results['static_file_serving'] = self.test_static_file_serving()
             
+            # Test Asset Import functionality (CRITICAL - user reported not working)
+            test_results['asset_import_functionality'] = self.test_asset_import_functionality()
+            
             # Cleanup
             self.cleanup()
         else:
