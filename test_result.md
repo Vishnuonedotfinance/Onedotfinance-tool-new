@@ -558,3 +558,48 @@ agent_communication:
       📊 **TEST RESULTS**: 7/7 tests passed (100% success rate)
       
       All new backend features are working perfectly. Ready for frontend testing or production use.
+  - agent: "testing"
+    message: |
+      ✅ **CLIENT ONBOARDING & CONSUMABLES MODULES - COMPREHENSIVE BACKEND TESTING COMPLETED**
+      
+      **AUTHENTICATION**: Successfully authenticated with vishnu@onedotfinance.com (org_cd4324ad) using OTP flow
+      
+      **CLIENT ONBOARDING MODULE**: ✅ ALL TESTS PASSED
+      1. **GET /api/client-onboarding**: Returns filtered list by org_id (initially empty)
+      2. **POST /api/client-onboarding**: Creates onboarding with multi-service support
+         - Test data: "Test Client Corp", services=["PPC", "SEO"], currency="USD", pricing=5000.0
+         - All fields stored correctly (client_name, poc_name, poc_email, services, currency, pricing, approver_user_id)
+      3. **PATCH /api/client-onboarding/{id}**: Updates proposal_status and onboarding_status
+         - Updated to proposal_status="Approved", onboarding_status="WIP"
+         - Changes verified in subsequent GET request
+      4. **DELETE /api/client-onboarding/{id}**: Successfully removes onboarding record
+         - Verified deletion by confirming record no longer exists
+      
+      **CONSUMABLES MODULE**: ✅ ALL TESTS PASSED
+      1. **GET /api/stock-products**: Returns empty list initially
+      2. **POST /api/stock-in**: Successfully adds inventory
+         - Added 100 USB Cables from "Tech Supplies Inc" with invoice INV-2025-001
+         - Price: 500.0, vendor email: vendor@techsupplies.com
+      3. **GET /api/stock-availability**: Correctly shows 100 units available
+      4. **POST /api/stock-out**: Successfully issues stock
+         - Issued 20 units to "Engineering Team" (eng@company.com)
+         - Stock automatically reduced from 100 to 80 units
+      5. **GET /api/stock-transactions**: Records both Stock In and Stock Out transactions
+         - Found 2 transactions with correct types and product names
+      6. **PATCH /api/stock-availability/{id}**: Updates notes field successfully
+      7. **Error Handling**: Correctly rejects insufficient stock requests (400 status)
+         - Attempted to issue 200 units when only 80 available - properly rejected
+      
+      **STATIC FILE SERVING**: ✅ WORKING
+      - /uploads directory accessible (200 response)
+      - /uploads/logos directory accessible (200 response)
+      - Static file serving properly configured for logo uploads
+      
+      **CRITICAL FIXES MADE DURING TESTING**:
+      - Fixed incomplete Excel export function in server.py (IndentationError)
+      - Removed orphaned code lines that were causing syntax errors
+      - Backend service restarted successfully after fixes
+      
+      **OVERALL RESULTS**: 10/10 backend tests passed (100% success rate)
+      
+      All Client Onboarding and Consumables backend APIs are working perfectly with proper org_id filtering, data validation, and error handling. Ready for frontend integration and production use.
