@@ -627,7 +627,7 @@ async def get_active_clients_by_department(
 
 @api_router.post("/clients", response_model=Client)
 async def create_client(client_data: ClientCreate, current_user: dict = Depends(get_current_user)):
-    client = Client(**client_data.model_dump())
+    client = Client(**client_data.model_dump(), org_id=current_user['org_id'])  # Add org_id
     client.end_date = calculate_end_date(client.start_date, client.tenure_months)
     client.agreement_status = check_agreement_status(client.end_date)
     
