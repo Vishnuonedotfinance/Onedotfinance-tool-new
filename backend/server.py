@@ -524,12 +524,13 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
     if current_user['role'] != 'Admin':
         raise HTTPException(status_code=403, detail="Only Admin can create users")
     
-    # Check if user exists
-    existing = await db.users.find_one({"email": user_data.email})
+    # Check if user exists in this org
+    existing = await db.users.find_one({"email": user_data.email, "org_id": current_user['org_id']})
     if existing:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=400, detail="User already exists in this organization")
     
     user = User(
+        org_id=current_user['org_id'],  # Add org_id from current user
         name=user_data.name,
         email=user_data.email,
         mobile=user_data.mobile,
