@@ -1531,10 +1531,13 @@ async def get_asset_sample(current_user: dict = Depends(get_current_user)):
         cell.font = Font(bold=True)
         cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
     
+    # Add sample data with proper date format YYYY-MM-DD
     ws.append(['Laptop', 'Dell XPS 15', 'SN123456', '2024-01-15', 'Dell India', 
-               75000, 12, 'John Doe', 'john@company.com', 'PPC'])
-    ws.append(['Monitor', 'LG 27inch', 'SN789012', '2024-02-01', 'LG Store', 
-               15000, 24, 'Jane Smith', 'jane@company.com', 'SEO'])
+               75000, 12, 'John Doe', 'john.doe@example.com', 'PPC'])
+    ws.append(['Monitor', 'LG 27inch 4K', 'SN789012', '2024-02-01', 'LG Store', 
+               15000, 24, 'Jane Smith', 'jane.smith@example.com', 'SEO'])
+    ws.append(['Keyboard', 'Logitech MX Keys', 'SN345678', '2024-03-10', 'Amazon', 
+               8500, 12, 'Bob Wilson', 'bob.wilson@example.com', 'Content'])
     
     output = BytesIO()
     wb.save(output)
