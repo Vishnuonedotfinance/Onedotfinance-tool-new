@@ -92,7 +92,7 @@ class OTPVerifyRequest(BaseModel):
 class Client(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: f"client_{uuid.uuid4().hex[:8]}")
-    org: str = "piperocket"
+    org_id: str
     client_name: str
     address: str
     start_date: str
