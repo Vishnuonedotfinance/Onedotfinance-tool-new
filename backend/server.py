@@ -1744,11 +1744,20 @@ async def import_assets(file: UploadFile = File(...), current_user: dict = Depen
         
         for index, row in df.iterrows():
             try:
-                # Convert purchase_date to proper format if it's a datetime object
-                purchase_date_str = str(row['purchase_date'])
-                if 'T' in purchase_date_str or ' ' in purchase_date_str:
-                    purchase_date_str = purchase_date_str.split('T')[0].split(' ')[0]
+                # Handle purchase_date - could be datetime, date, or string
+                purchase_date_val = row['purchase_date']
+                if pd.isna(purchase_date_val):
+                    raise ValueError("purchase_date is required")
                 
+                # Convert to string date format
+                if isinstance(purchase_date_val, (pd.Timestamp, datetime)):
+                    purchase_date_str = purchase_date_val.strftime('%Y-%m-%d')
+                else:
+                    purchase_date_str = str(purchase_date_val)
+                    if 'T' in purchase_date_str or ' ' in purchase_date_str:
+                        purchase_date_str = purchase_date_str.split('T')[0].split(' ')[0]
+                
+                # Validate and clean data
                 asset_data = AssetCreate(
                     asset_type=str(row['asset_type']).strip(),
                     model=str(row['model']).strip(),
@@ -1758,7 +1767,7 @@ async def import_assets(file: UploadFile = File(...), current_user: dict = Depen
                     value_ex_gst=float(row['value_ex_gst']),
                     warranty_period_months=int(row['warranty_period_months']),
                     alloted_to=str(row['alloted_to']).strip(),
-                    email=str(row['email']).strip(),
+                    email=str(row['email']).strip().lower(),
                     department=str(row['department']).strip()
                 )
                 
@@ -1774,7 +1783,9 @@ async def import_assets(file: UploadFile = File(...), current_user: dict = Depen
                 imported_count += 1
                 
             except Exception as e:
-                errors.append(f"Row {index + 2}: {str(e)}")
+                error_msg = f"Row {index + 2}: {str(e)}"
+                errors.append(error_msg)
+                print(f"Import error: {error_msg}")  # Log to console for debugging
         
         return {
             "message": f"Import completed. {imported_count} assets imported successfully.",
