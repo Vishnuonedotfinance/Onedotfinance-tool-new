@@ -35,18 +35,25 @@ export default function Signup() {
 
     try {
       const response = await api.post('/auth/signup', formData);
+      setOrgData(response.data);
+      setShowSuccess(true);
       toast.success('Organization created successfully!');
-      toast.info(`Your Org ID: ${response.data.org_id}`);
-      
-      // Wait a bit to show the org ID, then redirect to login
-      setTimeout(() => {
-        navigate('/login', { state: { orgId: response.data.org_id, email: formData.admin_email } });
-      }, 3000);
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Signup failed');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopyOrgId = () => {
+    if (orgData?.org_id) {
+      navigator.clipboard.writeText(orgData.org_id);
+      toast.success('Org ID copied to clipboard!');
+    }
+  };
+
+  const handleProceedToLogin = () => {
+    navigate('/login', { state: { orgId: orgData.org_id, email: formData.admin_email } });
   };
 
   return (
