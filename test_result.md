@@ -357,6 +357,42 @@ frontend:
         agent: "main"
         comment: "Added Import Excel button, Export to Excel button, and Download Sample button with proper file handling"
 
+  - task: "Client Onboarding Module Frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ClientOnboarding.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created complete ClientOnboarding component with table view, CRUD operations, status dropdowns (Proposal Status: Sent/Approved/Rejected/In Negotiation, Onboarding Status: Not Onboarded/WIP/Onboarded), multi-service selection, currency support (INR/USD), approver assignment. Added navigation link and route."
+
+  - task: "Consumables Module Frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Consumables.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created complete Consumables component with two tabs: Stock Availability (current inventory with notes) and Stock Transactions (history). Implemented Stock In modal (product, quantity, price, vendor, invoice, date) and Stock Out modal (product, quantity, issued to, email, date). Dynamic product dropdown with available quantities. Added navigation link and route."
+
+  - task: "Logo Upload Functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Signup.js, /app/frontend/src/components/Layout.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added logo upload section to Signup success modal with file preview, validation (5MB max, images only). Updated Layout.js to display org logo from localStorage with BACKEND_URL prefix and fallback handling. Logo persists across sessions via localStorage after login."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
