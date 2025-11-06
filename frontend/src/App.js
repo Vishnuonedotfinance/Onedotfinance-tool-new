@@ -14,6 +14,7 @@ import Reports from './components/Reports';
 import Signup from './components/Signup';
 import ClientOnboarding from './components/ClientOnboarding';
 import Consumables from './components/Consumables';
+import Settings from './components/Settings';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
