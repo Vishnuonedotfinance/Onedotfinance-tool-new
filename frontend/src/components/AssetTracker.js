@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, Download, Upload, FileDown } from 'lucide-react';
 
 export default function AssetTracker() {
   const [assets, setAssets] = useState([]);
+  const [services, setServices] = useState([]);
   const [filteredAssets, setFilteredAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -23,7 +24,7 @@ export default function AssetTracker() {
     warranty_period_months: 12,
     alloted_to: '',
     email: '',
-    department: 'PPC'
+    department: ''
   });
 
   useEffect(() => {
