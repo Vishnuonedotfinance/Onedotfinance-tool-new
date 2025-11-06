@@ -81,6 +81,7 @@ class UserCreate(BaseModel):
     password: str
 
 class LoginRequest(BaseModel):
+    org_id: str
     email: EmailStr
     password: str
 
