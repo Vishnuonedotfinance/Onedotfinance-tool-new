@@ -226,6 +226,9 @@ backend:
       - working: true
         agent: "main"
         comment: "✅ FIXED: Added authentication dependency to /api/assets/sample endpoint (and also fixed same issue in /clients/sample, /contractors/sample, /employees/sample). All sample endpoints now require authentication."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Sample template generation working perfectly. GET /api/assets/sample returns 5316-byte Excel file with proper authentication requirement. Template contains correct headers (asset_type, model, serial_number, purchase_date, vendor, value_ex_gst, warranty_period_months, alloted_to, email, department) and 3 sample rows with realistic data. File format is valid Excel (.xlsx) and can be successfully imported back through the import endpoint."
 
   - task: "Client Onboarding Module Backend"
     implemented: true
