@@ -337,6 +337,75 @@ class AssetCreate(BaseModel):
     email: EmailStr
     department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
 
+
+# ============= CLIENT ONBOARDING MODELS =============
+
+class ClientOnboarding(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"onboard_{uuid.uuid4().hex[:8]}")
+    org_id: str
+    client_name: str
+    poc_name: str
+    poc_email: EmailStr
+    services: List[str]  # Multiple: PPC, SEO, Backlink, Content
+    currency: Literal['USD', 'INR']
+    pricing: float
+    approver_user_id: str
+    proposal_status: Literal['Sent', 'Approved', 'Rejected', 'In Negotiation'] = 'Sent'
+    onboarding_status: Literal['Onboarded', 'WIP', 'Not Onboarded'] = 'Not Onboarded'
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ClientOnboardingCreate(BaseModel):
+    client_name: str
+    poc_name: str
+    poc_email: EmailStr
+    services: List[str]
+    currency: Literal['USD', 'INR']
+    pricing: float
+    approver_user_id: str
+
+# ============= CONSUMABLES MODELS =============
+
+class StockAvailability(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"stock_{uuid.uuid4().hex[:8]}")
+    org_id: str
+    product_name: str
+    vendor_name: str
+    stock_available: int
+    notes: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class StockTransaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"txn_{uuid.uuid4().hex[:8]}")
+    org_id: str
+    type: Literal['Stock In', 'Stock Out']
+    product_name: str
+    vendor_name_or_issued_to: str
+    invoice_number: Optional[str] = None
+    email: EmailStr
+    date: str
+    quantity: int
+    price: Optional[float] = None  # For Stock In
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class StockInCreate(BaseModel):
+    product_name: str
+    quantity: int
+    price: float
+    vendor_name: str
+    email: EmailStr
+    invoice_number: str
+    date: str
+
+class StockOutCreate(BaseModel):
+    product_name: str
+    quantity: int
+    issued_to: str
+    email: EmailStr
+    date: str
+
 # ============= HELPER FUNCTIONS =============
 
 def hash_password(password: str) -> str:
