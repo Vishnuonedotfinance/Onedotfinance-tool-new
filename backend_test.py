@@ -48,28 +48,8 @@ class BackendTester:
         # For now, let's try to find existing org_id by checking if there's a way to get it
         # Since this is a test environment, let's try some common org_ids
         
-        org_id = None
-        for test_org_id in ["org_12345678", "org_87654321", "org_abcdef12"]:
-            test_data = {
-                "org_id": test_org_id,
-                "email": TEST_EMAIL,
-                "password": TEST_PASSWORD
-            }
-            response = self.session.post(f"{BASE_URL}/auth/login", json=test_data)
-            if response.status_code == 200:
-                org_id = test_org_id
-                self.log(f"Found valid org_id: {org_id}")
-                break
-            elif response.status_code == 404:
-                continue  # Try next org_id
-            else:
-                # Some other error, let's see the response
-                self.log(f"Login attempt with org_id {test_org_id} failed: {response.status_code} - {response.text}")
-        
-        if not org_id:
-            self.log("Could not find valid org_id. Trying to get from database or use default...", "WARNING")
-            # Let's try a database query approach or use a default
-            org_id = "org_12345678"  # Default fallback
+        # Use the known org_id for Vishnu@onedotfinance.com
+        org_id = "org_cd4324ad"
         
         login_data = {
             "org_id": org_id,
