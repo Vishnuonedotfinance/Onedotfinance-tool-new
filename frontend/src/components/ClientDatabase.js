@@ -462,11 +462,12 @@ export default function ClientDatabase({ user }) {
                       value={formData.service}
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                       data-testid="service-select"
+                      required
                     >
-                      <option value="PPC">PPC</option>
-                      <option value="SEO">SEO</option>
-                      <option value="Content">Content</option>
-                      <option value="Backlink">Backlink</option>
+                      <option value="">Select Service</option>
+                      {services.map(service => (
+                        <option key={service.id} value={service.name}>{service.name}</option>
+                      ))}
                     </select>
                   </div>
                   <div className="form-group">
