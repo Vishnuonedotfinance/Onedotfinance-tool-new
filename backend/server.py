@@ -2216,6 +2216,52 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ============= ADMIN UTILITIES =============
+@api_router.post("/admin/clear-org-data")
+async def clear_org_data(current_user: dict = Depends(get_current_user)):
+    """Clear all data for the organization (Admin only)"""
+    if current_user['role'] != 'Admin':
+        raise HTTPException(status_code=403, detail="Only Admin can clear organization data")
+    
+    org_id = current_user['org_id']
+    
+    # Delete all data for this organization
+    await db.users.delete_many({"org_id": org_id})
+    await db.clients.delete_many({"org_id": org_id})
+    await db.contractors.delete_many({"org_id": org_id})
+    await db.employees.delete_many({"org_id": org_id})
+    await db.assets.delete_many({"org_id": org_id})
+    await db.client_onboarding.delete_many({"org_id": org_id})
+    await db.stock_availability.delete_many({"org_id": org_id})
+    await db.stock_transactions.delete_many({"org_id": org_id})
+    await db.services.delete_many({"org_id": org_id})
+    
+    return {"message": "All organization data cleared successfully"}
+
+@api_router.post("/admin/initialize-services")
+async def initialize_services(current_user: dict = Depends(get_current_user)):
+    """Initialize default services for the organization (Admin only)"""
+    if current_user['role'] != 'Admin':
+        raise HTTPException(status_code=403, detail="Only Admin can initialize services")
+    
+    org_id = current_user['org_id']
+    
+    # Check if services already exist
+    existing_count = await db.services.count_documents({"org_id": org_id})
+    if existing_count > 0:
+        raise HTTPException(status_code=400, detail="Services already exist. Delete them first if you want to reinitialize.")
+    
+    # Create default services
+    default_services = [
+        "PPC", "SEO", "Content", "Backlink", "Business Development", "Others"
+    ]
+    
+    for service_name in default_services:
+        service = Service(name=service_name, org_id=org_id)
+        await db.services.insert_one(service.model_dump())
+    
+    return {"message": f"Initialized {len(default_services)} default services"}
+
 @app.on_event("startup")
 async def startup():
     # Create seed admin user
