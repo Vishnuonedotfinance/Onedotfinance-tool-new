@@ -10,7 +10,7 @@ import sys
 from datetime import datetime, timedelta
 
 # Configuration
-BASE_URL = "https://finmgmt-tool.preview.emergentagent.com/api"
+BASE_URL = "https://onefinance.preview.emergentagent.com/api"
 TEST_EMAIL = "Vishnu@onedotfinance.com"
 TEST_PASSWORD = "12345678"
 
