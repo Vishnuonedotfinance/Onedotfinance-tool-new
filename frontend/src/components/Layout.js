@@ -157,6 +157,22 @@ export default function Layout({ children, user, onLogout }) {
             <BarChart3 /> Reports
           </Link>
 
+          <Link
+            to="/client-onboarding"
+            className={`nav-item ${location.pathname === '/client-onboarding' ? 'active' : ''}`}
+            data-testid="nav-client-onboarding"
+          >
+            <UserPlus /> Client Onboarding
+          </Link>
+
+          <Link
+            to="/consumables"
+            className={`nav-item ${location.pathname === '/consumables' ? 'active' : ''}`}
+            data-testid="nav-consumables"
+          >
+            <ShoppingCart /> Consumables
+          </Link>
+
           <a
             href="https://www.zoho.com/payroll/"
             target="_blank"
