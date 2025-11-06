@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Home, Users, FileText, Users2, Briefcase, CheckCircle, DollarSign, BarChart3, LogOut, Package } from 'lucide-react';
+import { ChevronDown, ChevronRight, Home, Users, FileText, Users2, Briefcase, CheckCircle, DollarSign, BarChart3, LogOut, Package, UserPlus, ShoppingCart } from 'lucide-react';
 
 export default function Layout({ children, user, onLogout }) {
   const location = useLocation();
