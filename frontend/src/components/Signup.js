@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../App';
 import { toast } from 'sonner';
-import { Building2, Mail, Lock, User, Phone } from 'lucide-react';
+import { Building2, Mail, Lock, User, Phone, Upload } from 'lucide-react';
 
 export default function Signup() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [orgData, setOrgData] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
   const [formData, setFormData] = useState({
     org_name: '',
     admin_name: '',
