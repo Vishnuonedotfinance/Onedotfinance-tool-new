@@ -11,9 +11,17 @@ export default function Settings({ user }) {
   const [currentLogo, setCurrentLogo] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Service management states
+  const [services, setServices] = useState([]);
+  const [showServiceModal, setShowServiceModal] = useState(false);
+  const [editingService, setEditingService] = useState(null);
+  const [serviceName, setServiceName] = useState('');
+  const [submittingService, setSubmittingService] = useState(false);
 
   useEffect(() => {
     loadOrgData();
+    loadServices();
   }, []);
 
   const loadOrgData = () => {
