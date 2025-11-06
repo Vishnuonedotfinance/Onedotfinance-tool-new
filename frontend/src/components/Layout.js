@@ -86,45 +86,25 @@ export default function Layout({ children, user, onLogout }) {
             </div>
             {expandedMenus.clients && (
               <div className="nav-submenu">
-                <Link to="/clients/sla-generator" className={`nav-item ${location.pathname === '/clients/sla-generator' ? 'active' : ''}`} data-testid="nav-sla-generator">
-                  SLA Generator
-                </Link>
-                <Link to="/clients/nda-generator" className={`nav-item ${location.pathname === '/clients/nda-generator' ? 'active' : ''}`} data-testid="nav-nda-generator">
-                  NDA Generator
-                </Link>
                 <Link to="/clients" className={`nav-item ${location.pathname === '/clients' ? 'active' : ''}`} data-testid="nav-client-database">
                   Client Database
                 </Link>
+                <Link to="/client-onboarding" className={`nav-item ${location.pathname === '/client-onboarding' ? 'active' : ''}`} data-testid="nav-client-onboarding">
+                  Client Onboarding
+                </Link>
               </div>
             )}
           </div>
 
           <div>
-            <div className="nav-item" onClick={() => toggleMenu('contractors')}>
-              <Users2 /> Contractors
-              {expandedMenus.contractors ? <ChevronDown size={16} style={{ marginLeft: 'auto' }} /> : <ChevronRight size={16} style={{ marginLeft: 'auto' }} />}
+            <div className="nav-item" onClick={() => toggleMenu('people')}>
+              <Users2 /> People
+              {expandedMenus.people ? <ChevronDown size={16} style={{ marginLeft: 'auto' }} /> : <ChevronRight size={16} style={{ marginLeft: 'auto' }} />}
             </div>
-            {expandedMenus.contractors && (
+            {expandedMenus.people && (
               <div className="nav-submenu">
-                <Link to="/contractors/ica-generator" className={`nav-item ${location.pathname === '/contractors/ica-generator' ? 'active' : ''}`} data-testid="nav-ica-generator">
-                  ICA Generator
-                </Link>
                 <Link to="/contractors" className={`nav-item ${location.pathname === '/contractors' ? 'active' : ''}`} data-testid="nav-contractor-database">
                   Contractor Database
-                </Link>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <div className="nav-item" onClick={() => toggleMenu('employees')}>
-              <Briefcase /> Employees
-              {expandedMenus.employees ? <ChevronDown size={16} style={{ marginLeft: 'auto' }} /> : <ChevronRight size={16} style={{ marginLeft: 'auto' }} />}
-            </div>
-            {expandedMenus.employees && (
-              <div className="nav-submenu">
-                <Link to="/employees/offer-letter-generator" className={`nav-item ${location.pathname === '/employees/offer-letter-generator' ? 'active' : ''}`} data-testid="nav-offer-generator">
-                  Offer Letter Generator
                 </Link>
                 <Link to="/employees" className={`nav-item ${location.pathname === '/employees' ? 'active' : ''}`} data-testid="nav-employee-database">
                   Employee Database
@@ -141,13 +121,22 @@ export default function Layout({ children, user, onLogout }) {
             <CheckCircle /> Approval
           </Link>
 
-          <Link
-            to="/asset-tracker"
-            className={`nav-item ${location.pathname === '/asset-tracker' ? 'active' : ''}`}
-            data-testid="nav-asset-tracker"
-          >
-            <Package /> Asset Tracker
-          </Link>
+          <div>
+            <div className="nav-item" onClick={() => toggleMenu('trackers')}>
+              <Package /> Other Trackers
+              {expandedMenus.trackers ? <ChevronDown size={16} style={{ marginLeft: 'auto' }} /> : <ChevronRight size={16} style={{ marginLeft: 'auto' }} />}
+            </div>
+            {expandedMenus.trackers && (
+              <div className="nav-submenu">
+                <Link to="/asset-tracker" className={`nav-item ${location.pathname === '/asset-tracker' ? 'active' : ''}`} data-testid="nav-asset-tracker">
+                  Asset Tracker
+                </Link>
+                <Link to="/consumables" className={`nav-item ${location.pathname === '/consumables' ? 'active' : ''}`} data-testid="nav-consumables">
+                  Consumables
+                </Link>
+              </div>
+            )}
+          </div>
 
           <Link
             to="/reports"
@@ -155,22 +144,6 @@ export default function Layout({ children, user, onLogout }) {
             data-testid="nav-reports"
           >
             <BarChart3 /> Reports
-          </Link>
-
-          <Link
-            to="/client-onboarding"
-            className={`nav-item ${location.pathname === '/client-onboarding' ? 'active' : ''}`}
-            data-testid="nav-client-onboarding"
-          >
-            <UserPlus /> Client Onboarding
-          </Link>
-
-          <Link
-            to="/consumables"
-            className={`nav-item ${location.pathname === '/consumables' ? 'active' : ''}`}
-            data-testid="nav-consumables"
-          >
-            <ShoppingCart /> Consumables
           </Link>
 
           <a
