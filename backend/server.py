@@ -159,7 +159,7 @@ class Contractor(BaseModel):
     pincode: str
     city: str
     address_2: Optional[str] = None
-    department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
+    department: str  # Dynamic department from Service table
     projects: List[str] = Field(default_factory=list)
     monthly_retainer_inr: float
     designation: str
@@ -188,7 +188,7 @@ class ContractorCreate(BaseModel):
     pincode: str
     city: str
     address_2: Optional[str] = None
-    department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
+    department: str  # Dynamic department from Service table
     projects: List[str] = Field(default_factory=list)
     monthly_retainer_inr: float
     designation: str
@@ -220,7 +220,7 @@ class Employee(BaseModel):
     pincode: str
     city: str
     monthly_gross_inr: float
-    department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
+    department: str  # Dynamic department from Service table
     projects: List[str] = Field(default_factory=list)
     approver_user_id: str
     status: Literal['Active', 'Terminated'] = 'Active'
@@ -249,7 +249,7 @@ class EmployeeCreate(BaseModel):
     pincode: str
     city: str
     monthly_gross_inr: float
-    department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
+    department: str  # Dynamic department from Service table
     projects: List[str] = Field(default_factory=list)
     approver_user_id: str
 
@@ -322,7 +322,7 @@ class Asset(BaseModel):
     warranty_period_months: int
     alloted_to: str
     email: EmailStr
-    department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
+    department: str  # Dynamic department from Service table
     warranty_status: str = "Active"
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -336,7 +336,7 @@ class AssetCreate(BaseModel):
     warranty_period_months: int
     alloted_to: str
     email: EmailStr
-    department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
+    department: str  # Dynamic department from Service table
 
 
 # ============= SERVICE/DEPARTMENT MODELS =============
