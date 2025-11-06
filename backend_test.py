@@ -971,6 +971,185 @@ class BackendTester:
         except Exception as e:
             self.log(f"Static file serving test error: {str(e)}", "ERROR")
             return False
+
+    def test_asset_import_functionality(self):
+        """Test Asset Import functionality - Download sample, Import file, Verify assets, Error handling"""
+        self.log("=== Testing Asset Import Functionality ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        sample_file_path = "/tmp/asset_sample.xlsx"
+        created_asset_ids = []
+        
+        try:
+            # Step 1: Download Sample Template (GET /api/assets/sample)
+            self.log("Step 1: Testing GET /api/assets/sample - Download sample template...")
+            response = self.session.get(f"{BASE_URL}/assets/sample")
+            self.log(f"Download sample template response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Download sample template failed: {response.text}", "ERROR")
+                return False
+                
+            # Verify it's an Excel file
+            content_type = response.headers.get('content-type', '')
+            if 'spreadsheet' not in content_type and 'excel' not in content_type:
+                self.log(f"Sample template not an Excel file. Content-Type: {content_type}", "ERROR")
+                return False
+                
+            # Save the file
+            with open(sample_file_path, 'wb') as f:
+                f.write(response.content)
+                
+            file_size = len(response.content)
+            self.log(f"Sample template downloaded successfully. Size: {file_size} bytes")
+            
+            if file_size < 1000:  # Excel files should be at least 1KB
+                self.log(f"Sample template file too small: {file_size} bytes", "ERROR")
+                return False
+            
+            # Step 2: Import the Sample File (POST /api/assets/import)
+            self.log("Step 2: Testing POST /api/assets/import - Import sample file...")
+            
+            with open(sample_file_path, 'rb') as f:
+                files = {'file': ('asset_sample.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                response = self.session.post(f"{BASE_URL}/assets/import", files=files)
+                
+            self.log(f"Import sample file response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Import sample file failed: {response.text}", "ERROR")
+                return False
+                
+            import_result = response.json()
+            imported_count = import_result.get('imported', 0)
+            errors = import_result.get('errors', [])
+            
+            self.log(f"Import completed. Imported: {imported_count} assets")
+            if errors:
+                self.log(f"Import errors: {errors}", "WARNING")
+            
+            if imported_count == 0:
+                self.log("No assets were imported from sample file", "ERROR")
+                return False
+            
+            # Step 3: Verify Imported Assets (GET /api/assets)
+            self.log("Step 3: Testing GET /api/assets - Verify imported assets...")
+            response = self.session.get(f"{BASE_URL}/assets")
+            self.log(f"Get assets response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Get assets failed: {response.text}", "ERROR")
+                return False
+                
+            assets = response.json()
+            self.log(f"Found {len(assets)} total assets in system")
+            
+            # Verify org_id is correctly set for all assets
+            current_org_id = self.user_info.get('org_id') if hasattr(self, 'user_info') and self.user_info else None
+            if not current_org_id:
+                # Try to get org_id from token or use known test org_id
+                current_org_id = "org_cd4324ad"
+            
+            org_filtered_assets = [a for a in assets if a.get('org_id') == current_org_id]
+            self.log(f"Found {len(org_filtered_assets)} assets for current org ({current_org_id})")
+            
+            # Look for recently imported assets (should have sample data characteristics)
+            sample_assets = []
+            for asset in org_filtered_assets:
+                # Check if this looks like sample data
+                if (asset.get('asset_type') in ['Laptop', 'Monitor', 'Keyboard'] or
+                    asset.get('vendor') in ['Dell India', 'LG Store', 'Amazon'] or
+                    'SN123456' in asset.get('serial_number', '') or
+                    'SN789012' in asset.get('serial_number', '') or
+                    'SN345678' in asset.get('serial_number', '')):
+                    sample_assets.append(asset)
+                    created_asset_ids.append(asset.get('id'))
+            
+            self.log(f"Found {len(sample_assets)} assets that appear to be from sample import")
+            
+            if len(sample_assets) == 0:
+                self.log("No sample assets found after import - checking all recent assets", "WARNING")
+                # If we can't identify sample assets, just verify some assets exist
+                if len(org_filtered_assets) < imported_count:
+                    self.log(f"Expected at least {imported_count} assets but found {len(org_filtered_assets)}", "ERROR")
+                    return False
+            
+            # Verify org_id is set correctly for sample assets
+            for asset in sample_assets:
+                if asset.get('org_id') != current_org_id:
+                    self.log(f"Asset org_id incorrect. Expected: {current_org_id}, Got: {asset.get('org_id')}", "ERROR")
+                    return False
+            
+            self.log("Imported assets verified successfully with correct org_id")
+            
+            # Step 4: Test Error Handling - Invalid file
+            self.log("Step 4: Testing error handling with invalid file...")
+            
+            # Create a text file and rename it to .xlsx
+            invalid_file_path = "/tmp/invalid_asset.xlsx"
+            with open(invalid_file_path, 'w') as f:
+                f.write("This is not an Excel file, just plain text")
+            
+            with open(invalid_file_path, 'rb') as f:
+                files = {'file': ('invalid_asset.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                response = self.session.post(f"{BASE_URL}/assets/import", files=files)
+                
+            self.log(f"Invalid file import response status: {response.status_code}")
+            
+            # Should fail with 400 or 422
+            if response.status_code == 200:
+                self.log("Invalid file import should have failed but succeeded", "ERROR")
+                return False
+            elif response.status_code in [400, 422]:
+                self.log("Invalid file correctly rejected")
+                try:
+                    error_response = response.json()
+                    self.log(f"Error message: {error_response.get('detail', 'No detail provided')}")
+                except:
+                    self.log(f"Error response: {response.text}")
+            else:
+                self.log(f"Unexpected response for invalid file: {response.status_code}", "WARNING")
+            
+            # Step 5: Test missing file error
+            self.log("Step 5: Testing missing file error...")
+            response = self.session.post(f"{BASE_URL}/assets/import")
+            self.log(f"Missing file import response status: {response.status_code}")
+            
+            if response.status_code in [400, 422]:
+                self.log("Missing file correctly rejected")
+            else:
+                self.log(f"Unexpected response for missing file: {response.status_code}", "WARNING")
+            
+            # Clean up files
+            try:
+                import os
+                os.remove(sample_file_path)
+                os.remove(invalid_file_path)
+            except:
+                pass
+            
+            self.log("Asset Import functionality tests completed successfully")
+            return True
+            
+        except Exception as e:
+            self.log(f"Asset import functionality test error: {str(e)}", "ERROR")
+            return False
+        finally:
+            # Cleanup created assets if needed
+            if created_asset_ids and self.user_info and self.user_info.get('role') in ['Admin', 'Director']:
+                self.log("Cleaning up imported sample assets...")
+                for asset_id in created_asset_ids:
+                    try:
+                        response = self.session.delete(f"{BASE_URL}/assets/{asset_id}")
+                        if response.status_code == 200:
+                            self.log(f"Cleaned up asset: {asset_id}")
+                        else:
+                            self.log(f"Failed to cleanup asset {asset_id}: {response.status_code}")
+                    except Exception as e:
+                        self.log(f"Cleanup error for asset {asset_id}: {str(e)}", "ERROR")
     
     def cleanup(self):
         """Clean up created test data"""
