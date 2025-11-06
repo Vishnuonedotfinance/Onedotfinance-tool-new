@@ -7,6 +7,7 @@ import FilterSort from './FilterSort';
 export default function EmployeeDatabase({ user }) {
   const [employees, setEmployees] = useState([]);
   const [users, setUsers] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
