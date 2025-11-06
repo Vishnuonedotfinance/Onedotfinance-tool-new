@@ -339,6 +339,17 @@ class AssetCreate(BaseModel):
     department: Literal['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']
 
 
+# ============= SERVICE/DEPARTMENT MODELS =============
+class Service(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: f"service_{uuid.uuid4().hex[:8]}")
+    org_id: str
+    name: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ServiceCreate(BaseModel):
+    name: str
+
 # ============= CLIENT ONBOARDING MODELS =============
 
 class ClientOnboarding(BaseModel):
