@@ -1845,6 +1845,146 @@ async def export_assets(current_user: dict = Depends(get_current_user)):
     output = BytesIO()
     
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
+
+
+# ============= CLIENT ONBOARDING ROUTES =============
+
+@api_router.get("/client-onboarding", response_model=List[ClientOnboarding])
+async def get_client_onboarding(current_user: dict = Depends(get_current_user)):
+    onboardings = await db.client_onboarding.find({"org_id": current_user['org_id']}, {"_id": 0}).to_list(1000)
+    return onboardings
+
+@api_router.post("/client-onboarding", response_model=ClientOnboarding)
+async def create_client_onboarding(data: ClientOnboardingCreate, current_user: dict = Depends(get_current_user)):
+    onboarding = ClientOnboarding(**data.model_dump(), org_id=current_user['org_id'])
+    doc = onboarding.model_dump()
+    await db.client_onboarding.insert_one(doc)
+    return onboarding
+
+@api_router.patch("/client-onboarding/{onboarding_id}")
+async def update_client_onboarding(onboarding_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    onboarding = await db.client_onboarding.find_one({"id": onboarding_id, "org_id": current_user['org_id']})
+    if not onboarding:
+        raise HTTPException(status_code=404, detail="Onboarding not found in your organization")
+    
+    await db.client_onboarding.update_one({"id": onboarding_id, "org_id": current_user['org_id']}, {"$set": update_data})
+    return {"message": "Onboarding updated successfully"}
+
+@api_router.delete("/client-onboarding/{onboarding_id}")
+async def delete_client_onboarding(onboarding_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.client_onboarding.delete_one({"id": onboarding_id, "org_id": current_user['org_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Onboarding not found")
+    return {"message": "Onboarding deleted successfully"}
+
+# ============= CONSUMABLES ROUTES =============
+
+@api_router.get("/stock-availability", response_model=List[StockAvailability])
+async def get_stock_availability(current_user: dict = Depends(get_current_user)):
+    stocks = await db.stock_availability.find({"org_id": current_user['org_id']}, {"_id": 0}).to_list(1000)
+    return stocks
+
+@api_router.get("/stock-transactions", response_model=List[StockTransaction])
+async def get_stock_transactions(current_user: dict = Depends(get_current_user)):
+    transactions = await db.stock_transactions.find({"org_id": current_user['org_id']}, {"_id": 0}).to_list(1000)
+    # Sort by date descending
+    transactions.sort(key=lambda x: x.get('date', ''), reverse=True)
+    return transactions
+
+@api_router.post("/stock-in")
+async def stock_in(data: StockInCreate, current_user: dict = Depends(get_current_user)):
+    # Create transaction
+    transaction = StockTransaction(
+        org_id=current_user['org_id'],
+        type='Stock In',
+        product_name=data.product_name,
+        vendor_name_or_issued_to=data.vendor_name,
+        invoice_number=data.invoice_number,
+        email=data.email,
+        date=data.date,
+        quantity=data.quantity,
+        price=data.price
+    )
+    await db.stock_transactions.insert_one(transaction.model_dump())
+    
+    # Update stock availability
+    existing_stock = await db.stock_availability.find_one({
+        "product_name": data.product_name,
+        "org_id": current_user['org_id']
+    })
+    
+    if existing_stock:
+        # Update quantity
+        new_quantity = existing_stock['stock_available'] + data.quantity
+        await db.stock_availability.update_one(
+            {"id": existing_stock['id']},
+            {"$set": {"stock_available": new_quantity, "vendor_name": data.vendor_name}}
+        )
+    else:
+        # Create new stock
+        stock = StockAvailability(
+            org_id=current_user['org_id'],
+            product_name=data.product_name,
+            vendor_name=data.vendor_name,
+            stock_available=data.quantity
+        )
+        await db.stock_availability.insert_one(stock.model_dump())
+    
+    return {"message": "Stock In recorded successfully"}
+
+@api_router.post("/stock-out")
+async def stock_out(data: StockOutCreate, current_user: dict = Depends(get_current_user)):
+    # Check if stock exists and has enough quantity
+    existing_stock = await db.stock_availability.find_one({
+        "product_name": data.product_name,
+        "org_id": current_user['org_id']
+    })
+    
+    if not existing_stock:
+        raise HTTPException(status_code=404, detail="Product not found in stock")
+    
+    if existing_stock['stock_available'] < data.quantity:
+        raise HTTPException(status_code=400, detail=f"Insufficient stock. Available: {existing_stock['stock_available']}")
+    
+    # Create transaction
+    transaction = StockTransaction(
+        org_id=current_user['org_id'],
+        type='Stock Out',
+        product_name=data.product_name,
+        vendor_name_or_issued_to=data.issued_to,
+        email=data.email,
+        date=data.date,
+        quantity=data.quantity
+    )
+    await db.stock_transactions.insert_one(transaction.model_dump())
+    
+    # Update stock availability
+    new_quantity = existing_stock['stock_available'] - data.quantity
+    await db.stock_availability.update_one(
+        {"id": existing_stock['id']},
+        {"$set": {"stock_available": new_quantity}}
+    )
+    
+    return {"message": "Stock Out recorded successfully"}
+
+@api_router.patch("/stock-availability/{stock_id}")
+async def update_stock_notes(stock_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    stock = await db.stock_availability.find_one({"id": stock_id, "org_id": current_user['org_id']})
+    if not stock:
+        raise HTTPException(status_code=404, detail="Stock not found")
+    
+    await db.stock_availability.update_one({"id": stock_id}, {"$set": update_data})
+    return {"message": "Stock updated successfully"}
+
+@api_router.get("/stock-products")
+async def get_stock_products(current_user: dict = Depends(get_current_user)):
+    """Get list of all product names for dropdown"""
+    stocks = await db.stock_availability.find(
+        {"org_id": current_user['org_id']}, 
+        {"_id": 0, "product_name": 1, "stock_available": 1}
+    ).to_list(1000)
+    return stocks
+
         df.to_excel(writer, index=False, sheet_name='Assets')
     
     output.seek(0)
