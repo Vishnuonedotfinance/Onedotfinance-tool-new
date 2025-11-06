@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 # Configuration
 BASE_URL = "https://onefinance.preview.emergentagent.com/api"
-TEST_EMAIL = "Vishnu@onedotfinance.com"
+TEST_EMAIL = "vishnu@onedotfinance.com"
 TEST_PASSWORD = "12345678"
 
 class BackendTester:
