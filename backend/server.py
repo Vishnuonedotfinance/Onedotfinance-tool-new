@@ -516,7 +516,8 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/users", response_model=List[User])
 async def get_users(current_user: dict = Depends(get_current_user)):
-    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    # Only return users from the same organization
+    users = await db.users.find({"org_id": current_user['org_id']}, {"_id": 0, "password_hash": 0}).to_list(1000)
     return users
 
 @api_router.post("/users", response_model=User)
