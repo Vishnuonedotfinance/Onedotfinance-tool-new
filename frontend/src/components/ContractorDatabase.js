@@ -529,13 +529,11 @@ export default function ContractorDatabase({ user }) {
                   </div>
                   <div className="form-group">
                     <label>Department *</label>
-                    <select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value, projects: [] })} data-testid="department-select">
-                      <option value="PPC">PPC</option>
-                      <option value="SEO">SEO</option>
-                      <option value="Content">Content</option>
-                      <option value="Backlink">Backlink</option>
-                      <option value="Business Development">Business Development</option>
-                      <option value="Others">Others</option>
+                    <select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value, projects: [] })} data-testid="department-select" required>
+                      <option value="">Select Department</option>
+                      {services.map(service => (
+                        <option key={service.id} value={service.name}>{service.name}</option>
+                      ))}
                     </select>
                   </div>
                   <div className="form-group form-group-full">
