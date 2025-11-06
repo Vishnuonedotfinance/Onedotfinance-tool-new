@@ -1139,7 +1139,10 @@ async def reset_approvals(current_user: dict = Depends(get_current_user)):
     if current_user['role'] == 'Director':
         raise HTTPException(status_code=403, detail="Directors cannot reset approvals")
     
-    result = await db.approvals.delete_many({})
+    # Only reset approvals for this org
+    org_users = await db.users.find({"org_id": current_user['org_id']}, {"id": 1}).to_list(1000)
+    org_user_ids = [u['id'] for u in org_users]
+    result = await db.approvals.delete_many({"requested_by": {"$in": org_user_ids}})
     return {"message": f"Reset complete. Deleted {result.deleted_count} approval records"}
 
 # ============= DASHBOARD ROUTES =============
