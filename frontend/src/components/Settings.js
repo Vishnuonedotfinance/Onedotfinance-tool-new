@@ -34,6 +34,79 @@ export default function Settings({ user }) {
     setLoading(false);
   };
 
+  const loadServices = async () => {
+    try {
+      const response = await api.get('/services');
+      setServices(response.data);
+    } catch (error) {
+      console.error('Failed to load services:', error);
+    }
+  };
+
+  const handleAddService = () => {
+    setEditingService(null);
+    setServiceName('');
+    setShowServiceModal(true);
+  };
+
+  const handleEditService = (service) => {
+    setEditingService(service);
+    setServiceName(service.name);
+    setShowServiceModal(true);
+  };
+
+  const handleSaveService = async () => {
+    if (!serviceName.trim()) {
+      toast.error('Service name is required');
+      return;
+    }
+
+    setSubmittingService(true);
+    try {
+      if (editingService) {
+        await api.patch(`/services/${editingService.id}`, { name: serviceName.trim() });
+        toast.success('Service updated successfully');
+      } else {
+        await api.post('/services', { name: serviceName.trim() });
+        toast.success('Service created successfully');
+      }
+      setShowServiceModal(false);
+      loadServices();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to save service');
+    } finally {
+      setSubmittingService(false);
+    }
+  };
+
+  const handleDeleteService = async (serviceId) => {
+    if (!window.confirm('Are you sure you want to delete this service? This may affect existing records.')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/services/${serviceId}`);
+      toast.success('Service deleted successfully');
+      loadServices();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete service');
+    }
+  };
+
+  const handleInitializeDefaultServices = async () => {
+    if (!window.confirm('This will create default services (PPC, SEO, Content, Backlink, Business Development, Others). Continue?')) {
+      return;
+    }
+
+    try {
+      await api.post('/admin/initialize-services');
+      toast.success('Default services initialized successfully');
+      loadServices();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to initialize services');
+    }
+  };
+
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
