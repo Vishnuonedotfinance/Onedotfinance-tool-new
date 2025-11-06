@@ -410,9 +410,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Client Onboarding Module (Backend & Frontend)"
-    - "Consumables Module (Backend & Frontend)"
-    - "Logo Upload and Display"
+    - "Logo Upload and Display (Frontend)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
