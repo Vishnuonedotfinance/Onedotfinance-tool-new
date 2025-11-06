@@ -230,11 +230,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added ClientOnboarding model (client_name, poc_name, poc_email, services, currency, pricing, proposal_status, onboarding_status). Implemented CRUD routes: GET/POST /api/client-onboarding, PATCH/DELETE /api/client-onboarding/{id}. All filtered by org_id."
+      - working: true
+        agent: "testing"
+        comment: "✅ Client Onboarding Module working perfectly. Tested complete CRUD flow: GET /api/client-onboarding (returns filtered list), POST /api/client-onboarding (creates with multi-service support, currency USD/INR), PATCH /api/client-onboarding/{id} (updates proposal_status and onboarding_status), DELETE /api/client-onboarding/{id} (removes record). All operations respect org_id filtering. Created test onboarding with services=['PPC', 'SEO'], updated status to Approved/WIP, verified changes, and successfully deleted."
 
   - task: "Consumables Module Backend"
     implemented: true
@@ -242,11 +245,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added StockAvailability and StockTransaction models. Implemented routes: GET /api/stock-availability, GET /api/stock-transactions, POST /api/stock-in, POST /api/stock-out, PATCH /api/stock-availability/{id}, GET /api/stock-products. All filtered by org_id with automatic stock quantity updates."
+      - working: true
+        agent: "testing"
+        comment: "✅ Consumables Module working excellently. Tested complete inventory flow: GET /api/stock-products (empty initially), POST /api/stock-in (added 100 USB Cables from Tech Supplies Inc), GET /api/stock-availability (verified 100 units), POST /api/stock-out (issued 20 units to Engineering Team), verified stock reduced to 80 units, GET /api/stock-transactions (confirmed both Stock In/Out transactions recorded), PATCH /api/stock-availability/{id} (updated notes), error handling for insufficient stock (correctly rejected 200 units request with 400 status). All operations maintain accurate stock quantities and transaction history."
 
   - task: "Static File Serving for Uploads"
     implemented: true
@@ -254,11 +260,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added StaticFiles mount for /uploads directory to serve organization logos and other uploaded files. Created uploads/logos directory structure."
+      - working: true
+        agent: "testing"
+        comment: "✅ Static File Serving working correctly. Tested /uploads directory accessibility (200 response), /uploads/logos directory accessible (200 response). Static file serving structure properly configured and responding. Ready for logo uploads and file serving functionality."
 
 frontend:
   - task: "Client Database Updates"
