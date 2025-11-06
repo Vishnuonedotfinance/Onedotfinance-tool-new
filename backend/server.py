@@ -1846,7 +1846,15 @@ async def export_assets(current_user: dict = Depends(get_current_user)):
     output = BytesIO()
     
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-
+        df.to_excel(writer, index=False, sheet_name='Assets')
+    
+    output.seek(0)
+    
+    return Response(
+        content=output.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="assets_export.xlsx"'}
+    )
 
 # ============= CLIENT ONBOARDING ROUTES =============
 
