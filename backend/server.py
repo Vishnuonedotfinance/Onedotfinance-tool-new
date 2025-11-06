@@ -836,7 +836,7 @@ async def get_contractors(
     filter_status: str = None,
     filter_department: str = None
 ):
-    query = {}
+    query = {"org_id": current_user['org_id']}  # Filter by org_id
     if filter_status:
         query['status'] = filter_status
     if filter_department:
@@ -853,7 +853,7 @@ async def get_contractors(
 
 @api_router.post("/contractors", response_model=Contractor)
 async def create_contractor(contractor_data: ContractorCreate, current_user: dict = Depends(get_current_user)):
-    contractor = Contractor(**contractor_data.model_dump())
+    contractor = Contractor(**contractor_data.model_dump(), org_id=current_user['org_id'])  # Add org_id
     contractor.end_date = calculate_end_date(contractor.start_date, contractor.tenure_months)
     contractor.agreement_status = check_agreement_status(contractor.end_date)
     
