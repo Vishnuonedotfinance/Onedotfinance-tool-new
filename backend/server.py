@@ -452,17 +452,23 @@ async def verify_otp(request: OTPVerifyRequest):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Get organization info
+    org = await db.organizations.find_one({"org_id": user['org_id']})
+    
     # Mark user as verified
     await db.users.update_one(
         {"email": request.email},
         {"$set": {"otp_verified": True}}
     )
     
-    # Generate JWT token
-    token = create_token(user['id'], user['email'], user['role'])
+    # Generate JWT token with org_id
+    token = create_token(user['id'], user['email'], user['role'], user['org_id'])
     
     return {
         "token": token,
+        "org_id": user['org_id'],
+        "org_name": org.get('org_name') if org else None,
+        "org_logo": org.get('logo') if org else None,
         "user": {
             "id": user['id'],
             "name": user['name'],
