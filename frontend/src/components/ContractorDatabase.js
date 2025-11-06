@@ -46,6 +46,7 @@ export default function ContractorDatabase({ user }) {
   useEffect(() => {
     loadContractors();
     loadUsers();
+    loadServices();
   }, [sortBy, filterStatus, filterDepartment]);
 
   useEffect(() => {
