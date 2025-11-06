@@ -407,15 +407,18 @@ frontend:
 
   - task: "Consumables Module Frontend"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/Consumables.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created complete Consumables component with two tabs: Stock Availability (current inventory with notes) and Stock Transactions (history). Implemented Stock In modal (product, quantity, price, vendor, invoice, date) and Stock Out modal (product, quantity, issued to, email, date). Dynamic product dropdown with available quantities. Added navigation link and route."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Consumables page loads correctly with proper tab structure (Stock Availability & Stock Transactions). Stock In modal opens and form can be filled with test data. However, after Stock In submission, products do not appear in Stock Availability table. Shows existing data (USB Cables with 80 units) but new entries are not persisting or displaying. Frontend-backend integration issue similar to Client Onboarding."
 
   - task: "Logo Upload Functionality"
     implemented: true
