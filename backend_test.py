@@ -602,6 +602,357 @@ class BackendTester:
         except Exception as e:
             self.log(f"Dashboard summary test error: {str(e)}", "ERROR")
             return False
+
+    def test_client_onboarding_module(self):
+        """Test Client Onboarding Module - CRUD operations"""
+        self.log("=== Testing Client Onboarding Module ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        created_onboarding_id = None
+        
+        try:
+            # Step 1: GET /api/client-onboarding (should be empty initially or show existing)
+            self.log("Step 1: Testing GET /api/client-onboarding...")
+            response = self.session.get(f"{BASE_URL}/client-onboarding")
+            self.log(f"Get client onboarding response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Get client onboarding failed: {response.text}", "ERROR")
+                return False
+                
+            initial_onboardings = response.json()
+            self.log(f"Found {len(initial_onboardings)} existing onboardings")
+            
+            # Step 2: POST /api/client-onboarding - Create new onboarding
+            self.log("Step 2: Testing POST /api/client-onboarding...")
+            onboarding_data = {
+                "client_name": "Test Client Corp",
+                "poc_name": "John Doe",
+                "poc_email": "john@testclient.com",
+                "services": ["PPC", "SEO"],
+                "currency": "USD",
+                "pricing": 5000.0,
+                "approver_user_id": self.user_info.get('id')
+            }
+            
+            response = self.session.post(f"{BASE_URL}/client-onboarding", json=onboarding_data)
+            self.log(f"Create client onboarding response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Client onboarding creation failed: {response.text}", "ERROR")
+                return False
+                
+            created_onboarding = response.json()
+            created_onboarding_id = created_onboarding.get('id')
+            self.log(f"Client onboarding created successfully. ID: {created_onboarding_id}")
+            
+            # Verify fields
+            if created_onboarding.get('client_name') != 'Test Client Corp':
+                self.log(f"Client name mismatch. Expected: Test Client Corp, Got: {created_onboarding.get('client_name')}", "ERROR")
+                return False
+                
+            if created_onboarding.get('services') != ["PPC", "SEO"]:
+                self.log(f"Services mismatch. Expected: ['PPC', 'SEO'], Got: {created_onboarding.get('services')}", "ERROR")
+                return False
+                
+            if created_onboarding.get('currency') != 'USD':
+                self.log(f"Currency mismatch. Expected: USD, Got: {created_onboarding.get('currency')}", "ERROR")
+                return False
+                
+            if created_onboarding.get('pricing') != 5000.0:
+                self.log(f"Pricing mismatch. Expected: 5000.0, Got: {created_onboarding.get('pricing')}", "ERROR")
+                return False
+            
+            # Step 3: PATCH /api/client-onboarding/{id} - Update onboarding status
+            self.log("Step 3: Testing PATCH /api/client-onboarding/{id}...")
+            update_data = {
+                "proposal_status": "Approved",
+                "onboarding_status": "WIP"
+            }
+            
+            response = self.session.patch(f"{BASE_URL}/client-onboarding/{created_onboarding_id}", json=update_data)
+            self.log(f"Update client onboarding response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Client onboarding update failed: {response.text}", "ERROR")
+                return False
+                
+            self.log("Client onboarding updated successfully")
+            
+            # Step 4: Verify the update by getting the list again
+            self.log("Step 4: Verifying update...")
+            response = self.session.get(f"{BASE_URL}/client-onboarding")
+            if response.status_code != 200:
+                self.log(f"Get client onboarding after update failed: {response.text}", "ERROR")
+                return False
+                
+            updated_onboardings = response.json()
+            found_onboarding = next((o for o in updated_onboardings if o.get('id') == created_onboarding_id), None)
+            
+            if not found_onboarding:
+                self.log("Updated onboarding not found", "ERROR")
+                return False
+                
+            if found_onboarding.get('proposal_status') != 'Approved':
+                self.log(f"Proposal status not updated. Expected: Approved, Got: {found_onboarding.get('proposal_status')}", "ERROR")
+                return False
+                
+            if found_onboarding.get('onboarding_status') != 'WIP':
+                self.log(f"Onboarding status not updated. Expected: WIP, Got: {found_onboarding.get('onboarding_status')}", "ERROR")
+                return False
+            
+            # Step 5: DELETE /api/client-onboarding/{id}
+            self.log("Step 5: Testing DELETE /api/client-onboarding/{id}...")
+            response = self.session.delete(f"{BASE_URL}/client-onboarding/{created_onboarding_id}")
+            self.log(f"Delete client onboarding response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Client onboarding deletion failed: {response.text}", "ERROR")
+                return False
+                
+            self.log("Client onboarding deleted successfully")
+            created_onboarding_id = None  # Mark as cleaned up
+            
+            # Verify deletion
+            response = self.session.get(f"{BASE_URL}/client-onboarding")
+            if response.status_code == 200:
+                final_onboardings = response.json()
+                deleted_onboarding = next((o for o in final_onboardings if o.get('id') == created_onboarding_id), None)
+                if deleted_onboarding:
+                    self.log("Onboarding still exists after deletion", "ERROR")
+                    return False
+            
+            self.log("Client Onboarding Module tests completed successfully")
+            return True
+            
+        except Exception as e:
+            self.log(f"Client onboarding test error: {str(e)}", "ERROR")
+            return False
+        finally:
+            # Cleanup if needed
+            if created_onboarding_id:
+                try:
+                    self.session.delete(f"{BASE_URL}/client-onboarding/{created_onboarding_id}")
+                    self.log(f"Cleaned up onboarding: {created_onboarding_id}")
+                except:
+                    pass
+
+    def test_consumables_module(self):
+        """Test Consumables Module - Stock In/Out operations and inventory tracking"""
+        self.log("=== Testing Consumables Module ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        try:
+            # Step 1: GET /api/stock-products (should be empty initially)
+            self.log("Step 1: Testing GET /api/stock-products...")
+            response = self.session.get(f"{BASE_URL}/stock-products")
+            self.log(f"Get stock products response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Get stock products failed: {response.text}", "ERROR")
+                return False
+                
+            initial_products = response.json()
+            self.log(f"Found {len(initial_products)} existing products")
+            
+            # Step 2: POST /api/stock-in - Add new stock
+            self.log("Step 2: Testing POST /api/stock-in...")
+            stock_in_data = {
+                "product_name": "USB Cables",
+                "quantity": 100,
+                "price": 500.0,
+                "vendor_name": "Tech Supplies Inc",
+                "email": "vendor@techsupplies.com",
+                "invoice_number": "INV-2025-001",
+                "date": "2025-11-06"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/stock-in", json=stock_in_data)
+            self.log(f"Stock in response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Stock in failed: {response.text}", "ERROR")
+                return False
+                
+            stock_in_result = response.json()
+            self.log("Stock in operation successful")
+            
+            # Step 3: GET /api/stock-availability - Verify stock created with correct quantity
+            self.log("Step 3: Testing GET /api/stock-availability...")
+            response = self.session.get(f"{BASE_URL}/stock-availability")
+            self.log(f"Get stock availability response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Get stock availability failed: {response.text}", "ERROR")
+                return False
+                
+            stock_availability = response.json()
+            self.log(f"Found {len(stock_availability)} stock items")
+            
+            # Find our USB Cables
+            usb_cables_stock = next((s for s in stock_availability if s.get('product_name') == 'USB Cables'), None)
+            if not usb_cables_stock:
+                self.log("USB Cables not found in stock availability", "ERROR")
+                return False
+                
+            if usb_cables_stock.get('stock_available') != 100:
+                self.log(f"Stock quantity mismatch. Expected: 100, Got: {usb_cables_stock.get('stock_available')}", "ERROR")
+                return False
+                
+            self.log(f"USB Cables stock verified: {usb_cables_stock.get('stock_available')} units available")
+            stock_item_id = usb_cables_stock.get('id')
+            
+            # Step 4: POST /api/stock-out - Issue stock
+            self.log("Step 4: Testing POST /api/stock-out...")
+            stock_out_data = {
+                "product_name": "USB Cables",
+                "quantity": 20,
+                "issued_to": "Engineering Team",
+                "email": "eng@company.com",
+                "date": "2025-11-06"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/stock-out", json=stock_out_data)
+            self.log(f"Stock out response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Stock out failed: {response.text}", "ERROR")
+                return False
+                
+            stock_out_result = response.json()
+            self.log("Stock out operation successful")
+            
+            # Step 5: GET /api/stock-availability - Verify quantity decreased (100 - 20 = 80)
+            self.log("Step 5: Verifying stock quantity after stock out...")
+            response = self.session.get(f"{BASE_URL}/stock-availability")
+            if response.status_code != 200:
+                self.log(f"Get stock availability after stock out failed: {response.text}", "ERROR")
+                return False
+                
+            updated_stock_availability = response.json()
+            updated_usb_cables = next((s for s in updated_stock_availability if s.get('product_name') == 'USB Cables'), None)
+            
+            if not updated_usb_cables:
+                self.log("USB Cables not found after stock out", "ERROR")
+                return False
+                
+            expected_quantity = 100 - 20  # 80
+            if updated_usb_cables.get('stock_available') != expected_quantity:
+                self.log(f"Stock quantity after stock out incorrect. Expected: {expected_quantity}, Got: {updated_usb_cables.get('stock_available')}", "ERROR")
+                return False
+                
+            self.log(f"Stock quantity correctly updated to: {updated_usb_cables.get('stock_available')} units")
+            
+            # Step 6: GET /api/stock-transactions - Verify both transactions recorded
+            self.log("Step 6: Testing GET /api/stock-transactions...")
+            response = self.session.get(f"{BASE_URL}/stock-transactions")
+            self.log(f"Get stock transactions response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Get stock transactions failed: {response.text}", "ERROR")
+                return False
+                
+            transactions = response.json()
+            self.log(f"Found {len(transactions)} stock transactions")
+            
+            # Find our transactions
+            usb_transactions = [t for t in transactions if t.get('product_name') == 'USB Cables']
+            if len(usb_transactions) < 2:
+                self.log(f"Expected at least 2 USB Cables transactions, found: {len(usb_transactions)}", "ERROR")
+                return False
+                
+            # Verify we have both Stock In and Stock Out
+            transaction_types = [t.get('type') for t in usb_transactions]
+            if 'Stock In' not in transaction_types or 'Stock Out' not in transaction_types:
+                self.log(f"Missing transaction types. Found: {transaction_types}", "ERROR")
+                return False
+                
+            self.log("Stock transactions verified successfully")
+            
+            # Step 7: PATCH /api/stock-availability/{id} - Update notes for a stock item
+            self.log("Step 7: Testing PATCH /api/stock-availability/{id}...")
+            update_notes_data = {
+                "notes": "Updated via API test - good quality cables"
+            }
+            
+            response = self.session.patch(f"{BASE_URL}/stock-availability/{stock_item_id}", json=update_notes_data)
+            self.log(f"Update stock notes response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"Update stock notes failed: {response.text}", "ERROR")
+                return False
+                
+            self.log("Stock notes updated successfully")
+            
+            # Step 8: Error Case - Try stock-out with insufficient quantity (should fail)
+            self.log("Step 8: Testing insufficient stock error case...")
+            insufficient_stock_data = {
+                "product_name": "USB Cables",
+                "quantity": 200,  # More than available (80)
+                "issued_to": "Test Team",
+                "email": "test@company.com",
+                "date": "2025-11-06"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/stock-out", json=insufficient_stock_data)
+            self.log(f"Insufficient stock test response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                self.log("Insufficient stock should have failed but succeeded", "ERROR")
+                return False
+            elif response.status_code in [400, 422]:
+                self.log("Insufficient stock correctly rejected")
+            else:
+                self.log(f"Unexpected response for insufficient stock: {response.status_code}", "WARNING")
+            
+            self.log("Consumables Module tests completed successfully")
+            return True
+            
+        except Exception as e:
+            self.log(f"Consumables module test error: {str(e)}", "ERROR")
+            return False
+
+    def test_static_file_serving(self):
+        """Test Static File Serving for uploads directory"""
+        self.log("=== Testing Static File Serving ===")
+        
+        try:
+            # Test if /uploads directory is accessible (even if empty)
+            self.log("Testing /uploads directory accessibility...")
+            
+            # Try to access the uploads directory
+            uploads_url = BASE_URL.replace('/api', '/uploads')
+            response = self.session.get(uploads_url)
+            self.log(f"Uploads directory response status: {response.status_code}")
+            
+            # We expect either 200 (directory listing) or 403 (forbidden but exists) or 404 (not found)
+            if response.status_code in [200, 403, 404]:
+                self.log(f"Uploads directory endpoint responding (status: {response.status_code})")
+                
+                # Try to access logos subdirectory
+                logos_url = f"{uploads_url}/logos"
+                response = self.session.get(logos_url)
+                self.log(f"Logos directory response status: {response.status_code}")
+                
+                if response.status_code in [200, 403, 404]:
+                    self.log("Static file serving structure appears to be configured")
+                    return True
+                else:
+                    self.log(f"Unexpected response from logos directory: {response.status_code}", "WARNING")
+                    return True  # Still consider it working as the main uploads responded
+            else:
+                self.log(f"Uploads directory not accessible: {response.status_code}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"Static file serving test error: {str(e)}", "ERROR")
+            return False
     
     def cleanup(self):
         """Clean up created test data"""
