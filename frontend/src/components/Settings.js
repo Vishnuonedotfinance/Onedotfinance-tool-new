@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../App';
 import { toast } from 'sonner';
-import { Building2, Upload, Trash2, Save } from 'lucide-react';
+import { Building2, Upload, Trash2, Save, Plus, Edit2, X } from 'lucide-react';
 
 export default function Settings({ user }) {
   const [orgName, setOrgName] = useState('');
