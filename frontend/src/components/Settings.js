@@ -198,6 +198,113 @@ export default function Settings({ user }) {
             </div>
           </div>
 
+          {/* Service/Department Management */}
+          <div style={{ marginBottom: '2rem', padding: '1.5rem', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <Building2 size={24} style={{ color: '#4F46E5' }} />
+                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '600' }}>Service/Department Database</h2>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {services.length === 0 && (
+                  <button
+                    onClick={handleInitializeDefaultServices}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    Initialize Defaults
+                  </button>
+                )}
+                <button
+                  onClick={handleAddService}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: '#4F46E5',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <Plus size={16} /> Add Service
+                </button>
+              </div>
+            </div>
+            <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1rem' }}>
+              Manage services/departments used across the application (Clients, Employees, Contractors, etc.)
+            </p>
+            
+            {services.length > 0 ? (
+              <div style={{ background: 'white', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                        Service/Department Name
+                      </th>
+                      <th style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#374151', width: '150px' }}>
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {services.map((service) => (
+                      <tr key={service.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                        <td style={{ padding: '0.75rem', fontSize: '0.875rem' }}>{service.name}</td>
+                        <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                          <button
+                            onClick={() => handleEditService(service)}
+                            style={{
+                              padding: '0.375rem 0.75rem',
+                              background: '#f3f4f6',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              marginRight: '0.5rem'
+                            }}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteService(service.id)}
+                            style={{
+                              padding: '0.375rem 0.75rem',
+                              background: '#fee2e2',
+                              color: '#dc2626',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280', background: 'white', borderRadius: '8px', border: '2px dashed #e5e7eb' }}>
+                No services/departments added yet. Click "Add Service" or "Initialize Defaults" to get started.
+              </div>
+            )}
+          </div>
+
           {/* Logo Upload Section */}
           <div style={{ marginBottom: '2rem', padding: '1.5rem', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
