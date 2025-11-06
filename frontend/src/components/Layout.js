@@ -183,7 +183,7 @@ export default function Layout({ children, user, onLogout }) {
       <main className="main-content">
         <div className="topbar">
           <div className="topbar-left">
-            <h3>Piperocket</h3>
+            <h3>{localStorage.getItem('org_name') || 'One.Finance Tool'}</h3>
           </div>
           <div className="topbar-right">
             <div className="datetime" data-testid="datetime-display">
