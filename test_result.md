@@ -439,6 +439,54 @@ agent_communication:
       - Multi-select project assignment and cost splitting logic
       
       Authentication: Admin (Vishnu@onedotfinance.com / 12345678)
+  - agent: "main"
+    message: |
+      ✅ COMPLETED NEW MODULES AND FEATURES:
+      
+      BACKEND ADDITIONS:
+      1. Client Onboarding Module:
+         - Models: ClientOnboarding, ClientOnboardingCreate
+         - Routes: GET/POST /api/client-onboarding, PATCH/DELETE /api/client-onboarding/{id}
+         - Features: Proposal status tracking, onboarding workflow, multi-service selection
+      
+      2. Consumables Module:
+         - Models: StockAvailability, StockTransaction, StockInCreate, StockOutCreate
+         - Routes: Stock In/Out operations, inventory tracking, transaction history
+         - Features: Automatic stock updates, product dropdown, vendor management
+      
+      3. Static File Serving:
+         - Mounted /uploads directory for serving organization logos
+         - Created uploads/logos directory structure
+      
+      FRONTEND ADDITIONS:
+      1. ClientOnboarding.js:
+         - Complete CRUD interface with status management
+         - Proposal tracking (Sent/Approved/Rejected/In Negotiation)
+         - Onboarding status (Not Onboarded/WIP/Onboarded)
+         - Multi-service selection, currency support, approver assignment
+      
+      2. Consumables.js:
+         - Two-tab interface (Stock Availability / Transactions)
+         - Stock In modal with vendor and invoice tracking
+         - Stock Out modal with issued-to tracking
+         - Real-time stock quantity display and updates
+      
+      3. Logo Upload:
+         - Added to Signup success modal with preview
+         - Validation: 5MB max, images only
+         - Display in Layout.js sidebar with backend URL prefix
+      
+      4. Navigation:
+         - Added "Client Onboarding" and "Consumables" menu items
+         - Routes configured in App.js
+      
+      READY FOR BACKEND TESTING:
+      - Client Onboarding CRUD operations
+      - Consumables Stock In/Out flows
+      - Static file serving for logos
+      
+      Authentication: Admin (Vishnu@onedotfinance.com / 12345678)
+      Org ID: Required for login
   - agent: "testing"
     message: |
       Backend testing completed for Asset Tracker functionality:
