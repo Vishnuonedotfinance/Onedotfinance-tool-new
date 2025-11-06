@@ -1307,7 +1307,7 @@ async def export_clients(current_user: dict = Depends(get_current_user)):
 @api_router.get("/contractors/export")
 async def export_contractors(current_user: dict = Depends(get_current_user)):
     """Export all contractors to Excel"""
-    contractors = await db.contractors.find({}, {"_id": 0}).to_list(1000)
+    contractors = await db.contractors.find({"org_id": current_user['org_id']}, {"_id": 0}).to_list(1000)
     
     if not contractors:
         raise HTTPException(status_code=404, detail="No contractors to export")
