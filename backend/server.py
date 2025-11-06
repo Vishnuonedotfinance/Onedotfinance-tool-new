@@ -1754,7 +1754,7 @@ async def import_assets(file: UploadFile = File(...), current_user: dict = Depen
                     department=str(row['department'])
                 )
                 
-                asset = Asset(**asset_data.model_dump())
+                asset = Asset(**asset_data.model_dump(), org_id=current_user['org_id'])
                 
                 # Calculate warranty status
                 purchase_date = datetime.fromisoformat(asset.purchase_date)
