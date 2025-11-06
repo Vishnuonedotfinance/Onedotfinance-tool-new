@@ -1089,7 +1089,11 @@ async def generate_offer_letter(request: OfferLetterGenerateRequest):
 
 @api_router.get("/approvals", response_model=List[Approval])
 async def get_approvals(current_user: dict = Depends(get_current_user)):
-    approvals = await db.approvals.find({}, {"_id": 0}).to_list(1000)
+    # Get approvals for items belonging to this org
+    # For now, we'll need to check the actual items, but for simplicity filter approvals by users in org
+    org_users = await db.users.find({"org_id": current_user['org_id']}, {"id": 1}).to_list(1000)
+    org_user_ids = [u['id'] for u in org_users]
+    approvals = await db.approvals.find({"requested_by": {"$in": org_user_ids}}, {"_id": 0}).to_list(1000)
     return approvals
 
 @api_router.post("/approvals/{item_type}/{item_id}/request")
