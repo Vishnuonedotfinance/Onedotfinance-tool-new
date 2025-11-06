@@ -442,12 +442,6 @@ async def upload_logo(org_id: str, file: UploadFile = File(...), current_user: d
     
     return {"message": "Logo uploaded successfully", "logo_url": logo_url}
 
-        "org_id": org.org_id,
-        "org_name": org.org_name,
-        "admin_email": request.admin_email,
-        "instructions": "Please use your Org ID, email, and password to login"
-    }
-
 @api_router.post("/auth/login")
 async def login(request: LoginRequest):
     # Verify organization exists
