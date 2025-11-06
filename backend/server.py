@@ -863,20 +863,23 @@ async def create_contractor(contractor_data: ContractorCreate, current_user: dic
 
 @api_router.patch("/contractors/{contractor_id}")
 async def update_contractor(contractor_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
+    # Verify contractor belongs to this org
+    contractor = await db.contractors.find_one({"id": contractor_id, "org_id": current_user['org_id']})
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found in your organization")
+    
     # Recalculate end_date and agreement_status if start_date or tenure_months changed
     if 'start_date' in update_data or 'tenure_months' in update_data:
-        contractor = await db.contractors.find_one({"id": contractor_id})
-        if contractor:
-            start_date = update_data.get('start_date', contractor.get('start_date'))
-            tenure_months = update_data.get('tenure_months', contractor.get('tenure_months'))
-            
-            if start_date and tenure_months:
-                end_date = calculate_end_date(start_date, tenure_months)
-                agreement_status = check_agreement_status(end_date)
-                update_data['end_date'] = end_date
-                update_data['agreement_status'] = agreement_status
+        start_date = update_data.get('start_date', contractor.get('start_date'))
+        tenure_months = update_data.get('tenure_months', contractor.get('tenure_months'))
+        
+        if start_date and tenure_months:
+            end_date = calculate_end_date(start_date, tenure_months)
+            agreement_status = check_agreement_status(end_date)
+            update_data['end_date'] = end_date
+            update_data['agreement_status'] = agreement_status
     
-    await db.contractors.update_one({"id": contractor_id}, {"$set": update_data})
+    await db.contractors.update_one({"id": contractor_id, "org_id": current_user['org_id']}, {"$set": update_data})
     return {"message": "Contractor updated successfully"}
 
 @api_router.delete("/contractors/{contractor_id}")
@@ -885,9 +888,9 @@ async def delete_contractor(contractor_id: str, current_user: dict = Depends(get
     if current_user['role'] not in ['Admin', 'Director']:
         raise HTTPException(status_code=403, detail="Only Admin and Director can delete contractors")
     
-    result = await db.contractors.delete_one({"id": contractor_id})
+    result = await db.contractors.delete_one({"id": contractor_id, "org_id": current_user['org_id']})
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Contractor not found")
+        raise HTTPException(status_code=404, detail="Contractor not found in your organization")
     
     return {"message": "Contractor deleted successfully"}
 
