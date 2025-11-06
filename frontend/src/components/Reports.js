@@ -8,12 +8,14 @@ export default function Reports() {
   const [clients, setClients] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [contractors, setContractors] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [clientProfitDeptFilter, setClientProfitDeptFilter] = useState('');
   const [resourceUtilDeptFilter, setResourceUtilDeptFilter] = useState('');
 
   useEffect(() => {
     loadData();
+    loadServices();
   }, []);
 
   const loadData = async () => {
@@ -33,9 +35,18 @@ export default function Reports() {
     }
   };
 
+  const loadServices = async () => {
+    try {
+      const response = await api.get('/services');
+      setServices(response.data);
+    } catch (error) {
+      console.error('Failed to load services');
+    }
+  };
+
   // Department-wise P&L
   const calculateDeptPL = () => {
-    const departments = ['PPC', 'SEO', 'Content', 'Backlink'];
+    const departments = services.map(s => s.name);
     return departments.map(dept => {
       const deptClients = clients.filter(c => c.service === dept);
       const deptEmployees = employees.filter(e => e.department === dept);
