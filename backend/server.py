@@ -1168,9 +1168,9 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
             except:
                 pass
     
-    # Upcoming birthdays - get employee and contractor names
-    employees = await db.employees.find({"status": "Active"}).to_list(1000)
-    contractors = await db.contractors.find({"status": "Active"}).to_list(1000)
+    # Upcoming birthdays - get employee and contractor names (filter by org_id)
+    employees = await db.employees.find({"status": "Active", "org_id": current_user['org_id']}).to_list(1000)
+    contractors = await db.contractors.find({"status": "Active", "org_id": current_user['org_id']}).to_list(1000)
     
     upcoming_birthdays = []
     
