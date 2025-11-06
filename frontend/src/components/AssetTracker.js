@@ -185,7 +185,7 @@ export default function AssetTracker() {
       warranty_period_months: 12,
       alloted_to: '',
       email: '',
-      department: 'PPC'
+      department: ''
     });
   };
 
