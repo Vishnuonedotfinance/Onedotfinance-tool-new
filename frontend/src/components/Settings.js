@@ -97,14 +97,23 @@ export default function Settings({ user }) {
 
       <div className="table-container" style={{ maxWidth: '800px' }}>
         <div style={{ padding: '2rem' }}>
-          {/* Organization Name */}
+          {/* Organization Info */}
           <div style={{ marginBottom: '2rem', padding: '1.5rem', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
               <Building2 size={24} style={{ color: '#4F46E5' }} />
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '600' }}>Organization Name</h2>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '600' }}>Organization Details</h2>
             </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>
-              {orgName}
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Organization Name</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>
+                {orgName}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Organization ID</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '600', color: '#4F46E5', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
+                {orgId}
+              </div>
             </div>
           </div>
 
