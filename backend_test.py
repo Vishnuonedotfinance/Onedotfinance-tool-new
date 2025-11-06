@@ -1036,6 +1036,11 @@ class BackendTester:
             test_results['employee_new_fields'] = self.test_employee_new_fields()
             test_results['dashboard_summary'] = self.test_dashboard_summary()
             
+            # Test NEW modules as requested
+            test_results['client_onboarding_module'] = self.test_client_onboarding_module()
+            test_results['consumables_module'] = self.test_consumables_module()
+            test_results['static_file_serving'] = self.test_static_file_serving()
+            
             # Cleanup
             self.cleanup()
         else:
