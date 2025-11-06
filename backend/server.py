@@ -100,7 +100,7 @@ class Client(BaseModel):
     tenure_months: int
     end_date: str = ""
     currency_preference: Literal['USD', 'INR'] = 'INR'
-    service: Literal['PPC', 'SEO', 'Content', 'Backlink']
+    service: str  # Dynamic service from Service table
     amount_inr: float
     amount_ppc: Optional[float] = None
     amount_seo: Optional[float] = None
@@ -123,7 +123,7 @@ class ClientCreate(BaseModel):
     start_date: str
     tenure_months: int
     currency_preference: Literal['USD', 'INR'] = 'INR'
-    service: Literal['PPC', 'SEO', 'Content', 'Backlink']
+    service: str  # Dynamic service from Service table
     amount_inr: float
     amount_ppc: Optional[float] = None
     amount_seo: Optional[float] = None
