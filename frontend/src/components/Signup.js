@@ -362,6 +362,135 @@ export default function Signup() {
           </div>
         </form>
       </div>
+
+      {/* Success Modal */}
+      {showSuccess && orgData && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '2rem'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            maxWidth: '500px',
+            width: '100%',
+            padding: '2.5rem',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            textAlign: 'center'
+          }}>
+            {/* Success Icon */}
+            <div style={{
+              width: '80px',
+              height: '80px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              borderRadius: '50%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '1.5rem'
+            }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+
+            <h2 style={{ 
+              fontSize: '1.75rem', 
+              fontWeight: '700', 
+              color: '#1f2937',
+              marginBottom: '1rem'
+            }}>
+              Organization Created!
+            </h2>
+
+            <p style={{ color: '#6b7280', marginBottom: '2rem', fontSize: '1rem' }}>
+              Your organization <strong>{orgData.org_name}</strong> has been created successfully.
+            </p>
+
+            {/* Org ID Display */}
+            <div style={{
+              background: '#f3f4f6',
+              padding: '1.5rem',
+              borderRadius: '12px',
+              marginBottom: '1.5rem',
+              border: '2px dashed #9ca3af'
+            }}>
+              <label style={{ 
+                display: 'block', 
+                fontSize: '0.875rem', 
+                color: '#6b7280',
+                marginBottom: '0.5rem',
+                fontWeight: '600'
+              }}>
+                YOUR ORGANIZATION ID
+              </label>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#667eea',
+                marginBottom: '1rem',
+                fontFamily: 'monospace',
+                letterSpacing: '1px'
+              }}>
+                {orgData.org_id}
+              </div>
+              <button
+                onClick={handleCopyOrgId}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#667eea',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                📋 Copy Org ID
+              </button>
+            </div>
+
+            <div style={{
+              background: '#fef3c7',
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '1.5rem',
+              fontSize: '0.875rem',
+              color: '#92400e',
+              textAlign: 'left'
+            }}>
+              <strong>⚠️ Important:</strong> Save this Org ID! You'll need it to login along with your email and password.
+            </div>
+
+            <button
+              onClick={handleProceedToLogin}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Proceed to Login
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
