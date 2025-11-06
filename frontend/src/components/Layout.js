@@ -41,7 +41,7 @@ export default function Layout({ children, user, onLogout }) {
           {localStorage.getItem('org_logo') ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <img 
-                src={localStorage.getItem('org_logo')} 
+                src={`${process.env.REACT_APP_BACKEND_URL}${localStorage.getItem('org_logo')}`}
                 alt="Logo" 
                 style={{ 
                   width: '40px', 
@@ -49,6 +49,9 @@ export default function Layout({ children, user, onLogout }) {
                   borderRadius: '8px',
                   objectFit: 'cover'
                 }} 
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
               />
               <h2>{localStorage.getItem('org_name') || 'One.Finance'}</h2>
             </div>
