@@ -1346,6 +1346,163 @@ class BackendTester:
                     self.log(f"Failed to cleanup employee {employee_id}: {response.status_code}")
             except Exception as e:
                 self.log(f"Cleanup error for employee {employee_id}: {str(e)}", "ERROR")
+
+    def test_import_export_functionality(self):
+        """Test ALL Import/Export Functionality - Clients, Contractors, Employees as requested by user"""
+        self.log("=== Testing Import/Export Functionality - ALL MODULES ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        all_results = {}
+        
+        # Test each module: Clients, Contractors, Employees
+        modules = [
+            ('clients', 'Clients'),
+            ('contractors', 'Contractors'), 
+            ('employees', 'Employees')
+        ]
+        
+        for module_endpoint, module_name in modules:
+            self.log(f"\n🔍 Testing {module_name.upper()} MODULE:")
+            self.log(f"   A. Download Sample: GET /api/{module_endpoint}/sample")
+            self.log(f"   B. Import EXACT Same File: POST /api/{module_endpoint}/import")
+            self.log(f"   C. Report: Imported count, Error count, Any error messages")
+            
+            module_result = self._test_single_module_import_export(module_endpoint, module_name)
+            all_results[module_name] = module_result
+            
+            if module_result:
+                self.log(f"✅ {module_name} module: SUCCESS")
+            else:
+                self.log(f"❌ {module_name} module: FAILED")
+        
+        # Overall result
+        all_passed = all(all_results.values())
+        
+        self.log("\n" + "="*60)
+        self.log("📊 IMPORT/EXPORT TEST SUMMARY")
+        self.log("="*60)
+        
+        for module_name, result in all_results.items():
+            status = "✅ SUCCESS" if result else "❌ FAILED"
+            self.log(f"{module_name}: {status}")
+        
+        if all_passed:
+            self.log("\n🎉 ALL MODULES WORKING PERFECTLY - Import/Export functionality is 100% operational")
+        else:
+            failed_modules = [name for name, result in all_results.items() if not result]
+            self.log(f"\n⚠️ FAILED MODULES: {', '.join(failed_modules)}")
+            self.log("❌ Import/Export functionality has issues that need to be fixed")
+        
+        return all_passed
+    
+    def _test_single_module_import_export(self, module_endpoint, module_name):
+        """Test import/export for a single module (clients, contractors, or employees)"""
+        sample_file_path = f"/tmp/{module_endpoint}_sample.xlsx"
+        
+        try:
+            # Step A: Download Sample
+            self.log(f"   A. Download Sample: GET /api/{module_endpoint}/sample")
+            response = self.session.get(f"{BASE_URL}/{module_endpoint}/sample")
+            self.log(f"      Response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"      ❌ CRITICAL: Download sample failed: {response.text}", "ERROR")
+                return False
+                
+            # Save the sample file
+            with open(sample_file_path, 'wb') as f:
+                f.write(response.content)
+                
+            file_size = len(response.content)
+            self.log(f"      ✅ Sample downloaded successfully. Size: {file_size} bytes")
+            
+            if file_size < 1000:  # Excel files should be at least 1KB
+                self.log(f"      ❌ CRITICAL: Sample file too small: {file_size} bytes", "ERROR")
+                return False
+            
+            # Step B: Import EXACT Same File
+            self.log(f"   B. Import EXACT Same File: POST /api/{module_endpoint}/import")
+            
+            with open(sample_file_path, 'rb') as f:
+                files = {'file': (f'{module_endpoint}_sample.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                response = self.session.post(f"{BASE_URL}/{module_endpoint}/import", files=files)
+                
+            self.log(f"      Response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"      ❌ CRITICAL: Import failed: {response.text}", "ERROR")
+                return False
+                
+            import_result = response.json()
+            
+            # Step C: Report Results
+            self.log(f"   C. Report Results:")
+            
+            # Extract import statistics
+            imported_count = 0
+            error_count = 0
+            error_messages = []
+            
+            # Handle different response formats
+            if isinstance(import_result, dict):
+                if 'imported' in import_result:
+                    imported_count = import_result.get('imported', 0)
+                elif 'message' in import_result:
+                    # Parse message like "Import completed. Imported: 2 assets"
+                    message = import_result.get('message', '')
+                    if 'Imported:' in message:
+                        try:
+                            imported_count = int(message.split('Imported:')[1].split()[0])
+                        except:
+                            imported_count = 0
+                
+                if 'errors' in import_result:
+                    errors = import_result.get('errors', [])
+                    if errors:
+                        error_count = len(errors)
+                        error_messages = errors
+                elif 'error_count' in import_result:
+                    error_count = import_result.get('error_count', 0)
+                    error_messages = import_result.get('error_messages', [])
+            
+            # Report the exact statistics as requested
+            self.log(f"      📊 IMPORT STATISTICS:")
+            self.log(f"         • Imported count: {imported_count}")
+            self.log(f"         • Error count: {error_count}")
+            
+            if error_messages:
+                self.log(f"         • Error messages:")
+                for i, error in enumerate(error_messages, 1):
+                    self.log(f"           {i}. {error}")
+            else:
+                self.log(f"         • Error messages: None")
+            
+            # Success criteria: Should import 2 sample rows with ZERO errors
+            if error_count > 0:
+                self.log(f"      ❌ CRITICAL: {module_name} has {error_count} errors - NOT meeting success criteria", "ERROR")
+                return False
+            
+            if imported_count < 2:
+                self.log(f"      ❌ CRITICAL: {module_name} imported only {imported_count} rows, expected at least 2", "ERROR")
+                return False
+            
+            self.log(f"      ✅ SUCCESS: {module_name} imported {imported_count} rows with ZERO errors")
+            
+            # Clean up the sample file
+            try:
+                import os
+                os.remove(sample_file_path)
+            except:
+                pass
+            
+            return True
+            
+        except Exception as e:
+            self.log(f"      ❌ CRITICAL ERROR in {module_name} import/export: {str(e)}", "ERROR")
+            return False
     
     def run_all_tests(self):
         """Run all tests and return summary"""
