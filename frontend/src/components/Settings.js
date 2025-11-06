@@ -134,7 +134,7 @@ export default function Settings({ user }) {
                   Current Logo:
                 </p>
                 <img
-                  src={`${process.env.REACT_APP_BACKEND_URL}${currentLogo}`}
+                  src={currentLogo.startsWith('http') ? currentLogo : `${process.env.REACT_APP_BACKEND_URL}${currentLogo}`}
                   alt="Current Logo"
                   style={{
                     maxWidth: '150px',
@@ -145,6 +145,8 @@ export default function Settings({ user }) {
                     background: 'white'
                   }}
                   onError={(e) => {
+                    console.error('Logo failed to load:', currentLogo);
+                    e.target.src = '';
                     e.target.style.display = 'none';
                   }}
                 />
