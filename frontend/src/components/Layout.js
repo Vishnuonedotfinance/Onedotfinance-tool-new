@@ -38,7 +38,23 @@ export default function Layout({ children, user, onLogout }) {
     <div className="layout-container">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2>Piperocket</h2>
+          {localStorage.getItem('org_logo') ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <img 
+                src={localStorage.getItem('org_logo')} 
+                alt="Logo" 
+                style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  borderRadius: '8px',
+                  objectFit: 'cover'
+                }} 
+              />
+              <h2>{localStorage.getItem('org_name') || 'One.Finance'}</h2>
+            </div>
+          ) : (
+            <h2>{localStorage.getItem('org_name') || 'One.Finance Tool'}</h2>
+          )}
         </div>
 
         <nav className="sidebar-nav">
