@@ -4,10 +4,12 @@ import { AlertTriangle, TrendingUp, Users, UserCheck } from 'lucide-react';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDashboard();
+    loadServices();
   }, []);
 
   const loadDashboard = async () => {
@@ -21,10 +23,19 @@ export default function Dashboard() {
     }
   };
 
+  const loadServices = async () => {
+    try {
+      const response = await api.get('/services');
+      setServices(response.data);
+    } catch (error) {
+      console.error('Failed to load services');
+    }
+  };
+
   if (loading) return <div>Loading dashboard...</div>;
   if (!data) return <div>Failed to load dashboard</div>;
 
-  const departments = ['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others'];
+  const departments = services.map(s => s.name);
 
   return (
     <div className="dashboard" data-testid="dashboard">
