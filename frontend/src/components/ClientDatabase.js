@@ -39,6 +39,7 @@ export default function ClientDatabase({ user }) {
   useEffect(() => {
     loadClients();
     loadUsers();
+    loadServices();
   }, [sortBy, filterStatus, filterDepartment]);
 
   const loadClients = async () => {
