@@ -1994,16 +1994,6 @@ async def get_stock_products(current_user: dict = Depends(get_current_user)):
     ).to_list(1000)
     return stocks
 
-        df.to_excel(writer, index=False, sheet_name='Assets')
-    
-    output.seek(0)
-    
-    return Response(
-        content=output.getvalue(),
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        headers={'Content-Disposition': 'attachment; filename="assets_export.xlsx"'}
-    )
-
 app.include_router(api_router)
 
 # Mount static files for uploads
