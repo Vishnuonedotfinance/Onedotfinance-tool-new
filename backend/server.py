@@ -1421,28 +1421,44 @@ async def export_employees(current_user: dict = Depends(get_current_user)):
 @api_router.get("/clients/sample")
 async def get_client_sample(current_user: dict = Depends(get_current_user)):
     """Download sample Excel template for bulk upload"""
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Clients"
+    # Get a valid Director/Admin user ID for the sample
+    approver = await db.users.find_one(
+        {"org_id": current_user['org_id'], "role": {"$in": ["Admin", "Director"]}},
+        {"id": 1}
+    )
+    approver_id = approver['id'] if approver else current_user['id']
     
-    # Headers with bold formatting
-    headers = ['client_name', 'address', 'start_date', 'tenure_months', 'currency_preference', 
-               'service', 'amount_inr', 'authorised_signatory', 'signatory_designation', 
-               'gst', 'poc_name', 'poc_email', 'poc_designation', 'poc_mobile', 'approver_user_id']
+    sample_data = {
+        'client_name': ['ABC Corp', 'XYZ Ltd'],
+        'address': ['123 Main St, New York', '456 Park Ave, Boston'],
+        'start_date': ['2025-01-01', '2025-02-01'],
+        'tenure_months': [12, 6],
+        'currency_preference': ['INR', 'INR'],
+        'service': ['PPC', 'SEO'],
+        'amount_inr': [50000.0, 75000.0],
+        'authorised_signatory': ['John Doe', 'Mike Johnson'],
+        'signatory_designation': ['CEO', 'Director'],
+        'gst': ['GST123456', 'GST789012'],
+        'poc_name': ['Jane Smith', 'Sarah Lee'],
+        'poc_email': ['jane.smith@abccorp.com', 'sarah.lee@xyzltd.com'],
+        'poc_designation': ['Manager', 'Lead'],
+        'poc_mobile': ['9876543210', '9876543211'],
+        'approver_user_id': [approver_id, approver_id]
+    }
     
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col, value=header)
-        cell.font = Font(bold=True)
-        cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
-    
-    # Sample rows
-    ws.append(['ABC Corp', '123 Main St', '2025-01-01', 12, 'INR', 'PPC', 50000, 
-               'John Doe', 'CEO', 'GST123', 'Jane Smith', 'jane@abc.com', 'Manager', '9876543210', 'user_id'])
-    ws.append(['XYZ Ltd', '456 Park Ave', '2025-02-01', 6, 'INR', 'SEO', 75000, 
-               'Mike Johnson', 'Director', 'GST456', 'Sarah Lee', 'sarah@xyz.com', 'Lead', '9876543211', 'user_id'])
+    df = pd.DataFrame(sample_data)
     
     output = BytesIO()
-    wb.save(output)
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Clients')
+        
+        workbook = writer.book
+        worksheet = writer.sheets['Clients']
+        
+        for cell in worksheet[1]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
+    
     output.seek(0)
     
     return Response(
