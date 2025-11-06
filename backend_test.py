@@ -1372,6 +1372,9 @@ class BackendTester:
             test_results['consumables_module'] = self.test_consumables_module()
             test_results['static_file_serving'] = self.test_static_file_serving()
             
+            # Test EXACT Asset Sample Download and Import Flow (CRITICAL - user specific request)
+            test_results['asset_sample_download_import_flow'] = self.test_asset_sample_download_import_flow()
+            
             # Test Asset Import functionality (CRITICAL - user reported not working)
             test_results['asset_import_functionality'] = self.test_asset_import_functionality()
             
