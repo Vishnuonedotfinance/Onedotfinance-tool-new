@@ -521,22 +521,103 @@ export default function Signup() {
               <strong>⚠️ Important:</strong> Save this Org ID! You'll need it to login along with your email and password.
             </div>
 
+            {/* Optional Logo Upload */}
+            <div style={{
+              background: '#f9fafb',
+              padding: '1.5rem',
+              borderRadius: '12px',
+              marginBottom: '1.5rem',
+              border: '1px solid #e5e7eb'
+            }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem', color: '#374151' }}>
+                Upload Organization Logo (Optional)
+              </h3>
+              
+              {!logoPreview ? (
+                <label style={{
+                  display: 'block',
+                  padding: '2rem',
+                  border: '2px dashed #d1d5db',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  background: 'white'
+                }}
+                onMouseEnter={(e) => e.target.style.borderColor = '#667eea'}
+                onMouseLeave={(e) => e.target.style.borderColor = '#d1d5db'}
+                >
+                  <Upload size={32} style={{ margin: '0 auto 0.5rem', display: 'block', color: '#9ca3af' }} />
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                    Click to upload logo
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+                    PNG, JPG up to 5MB
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              ) : (
+                <div>
+                  <img
+                    src={logoPreview}
+                    alt="Logo preview"
+                    style={{
+                      maxWidth: '150px',
+                      maxHeight: '150px',
+                      margin: '0 auto 1rem',
+                      display: 'block',
+                      borderRadius: '8px',
+                      border: '2px solid #e5e7eb'
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      setLogoFile(null);
+                      setLogoPreview(null);
+                    }}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button
               onClick={handleProceedToLogin}
+              disabled={uploadingLogo}
               style={{
                 width: '100%',
                 padding: '14px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: uploadingLogo ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '1rem',
                 fontWeight: '600',
-                cursor: 'pointer'
+                cursor: uploadingLogo ? 'not-allowed' : 'pointer'
               }}
             >
-              Proceed to Login
+              {uploadingLogo ? 'Uploading...' : (logoFile ? 'Skip Logo & Proceed to Login' : 'Proceed to Login')}
             </button>
+            
+            {logoFile && (
+              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                Note: Logo upload requires login. You can upload it from your profile after signing in.
+              </div>
+            )}
           </div>
         </div>
       )}
