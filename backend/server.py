@@ -1767,7 +1767,7 @@ async def delete_asset(asset_id: str, current_user: dict = Depends(get_current_u
 @api_router.get("/assets/export")
 async def export_assets(current_user: dict = Depends(get_current_user)):
     """Export all assets to Excel"""
-    assets = await db.assets.find({}, {"_id": 0}).to_list(1000)
+    assets = await db.assets.find({"org_id": current_user['org_id']}, {"_id": 0}).to_list(1000)
     
     if not assets:
         raise HTTPException(status_code=404, detail="No assets to export")
