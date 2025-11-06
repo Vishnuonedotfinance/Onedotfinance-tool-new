@@ -443,10 +443,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Logo Upload and Display (Frontend)"
-  stuck_tasks: []
+    - "Client Onboarding Module Frontend"
+    - "Consumables Module Frontend"
+  stuck_tasks:
+    - "Client Onboarding Module Frontend"
+    - "Consumables Module Frontend"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "stuck_first"
 
 agent_communication:
   - agent: "main"
