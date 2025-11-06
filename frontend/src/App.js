@@ -15,6 +15,7 @@ import OfferLetterGenerator from './components/OfferLetterGenerator';
 import Approval from './components/Approval';
 import AssetTracker from './components/AssetTracker';
 import Reports from './components/Reports';
+import Signup from './components/Signup';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
