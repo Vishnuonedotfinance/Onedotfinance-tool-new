@@ -1998,6 +1998,11 @@ async def get_stock_products(current_user: dict = Depends(get_current_user)):
 
 app.include_router(api_router)
 
+# Mount static files for uploads
+uploads_dir = ROOT_DIR / "uploads"
+uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
