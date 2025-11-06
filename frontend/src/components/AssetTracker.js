@@ -155,11 +155,16 @@ export default function AssetTracker() {
       
       toast.success(response.data.message);
       if (response.data.errors && response.data.errors.length > 0) {
-        console.log('Import errors:', response.data.errors);
-        toast.warning(`${response.data.errors.length} rows had errors. Check console for details.`);
+        console.error('==================== IMPORT ERRORS ====================');
+        response.data.errors.forEach(error => {
+          console.error(error);
+        });
+        console.error('======================================================');
+        toast.warning(`${response.data.errors.length} rows had errors. Check browser console (F12) for details.`);
       }
       loadAssets();
     } catch (error) {
+      console.error('Import failed:', error);
       toast.error(error.response?.data?.detail || 'Failed to import assets');
     }
     
