@@ -376,22 +376,67 @@ def check_agreement_status(end_date: str) -> str:
 
 # ============= AUTH ROUTES =============
 
+@api_router.post("/auth/signup")
+async def signup(request: OrganizationSignup):
+    # Check if email already exists
+    existing_user = await db.users.find_one({"email": request.admin_email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create organization
+    org = Organization(
+        org_name=request.org_name,
+        admin_name=request.admin_name,
+        admin_email=request.admin_email,
+        admin_mobile=request.admin_mobile
+    )
+    org_dict = org.model_dump()
+    await db.organizations.insert_one(org_dict)
+    
+    # Create admin user
+    user = User(
+        org_id=org.org_id,
+        name=request.admin_name,
+        email=request.admin_email,
+        mobile=request.admin_mobile,
+        role='Admin',
+        password_hash=hash_password(request.admin_password),
+        otp_verified=False
+    )
+    user_dict = user.model_dump()
+    await db.users.insert_one(user_dict)
+    
+    return {
+        "message": "Organization created successfully",
+        "org_id": org.org_id,
+        "org_name": org.org_name,
+        "admin_email": request.admin_email,
+        "instructions": "Please use your Org ID, email, and password to login"
+    }
+
 @api_router.post("/auth/login")
 async def login(request: LoginRequest):
-    user = await db.users.find_one({"email": request.email})
+    # Verify organization exists
+    org = await db.organizations.find_one({"org_id": request.org_id})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    # Find user with org_id and email
+    user = await db.users.find_one({"org_id": request.org_id, "email": request.email})
     if not user or not verify_password(request.password, user.get('password_hash', '')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     # Generate OTP (for MVP, we'll use a simple 6-digit code)
     otp = str(random.randint(100000, 999999))
     await db.otps.update_one(
-        {"email": request.email},
+        {"email": request.email, "org_id": request.org_id},
         {"$set": {"otp": otp, "created_at": datetime.now(timezone.utc).isoformat()}},
         upsert=True
     )
     
     return {
         "message": "OTP sent to email",
+        "org_id": request.org_id,
         "email": request.email,
         "otp": otp,  # For MVP, returning OTP (in production, send via email)
         "requires_verification": not user.get('otp_verified', False)
