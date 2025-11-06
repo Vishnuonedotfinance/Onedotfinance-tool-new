@@ -40,12 +40,30 @@ security = HTTPBearer()
 
 # ============= MODELS =============
 
+class Organization(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    org_id: str = Field(default_factory=lambda: f"org_{uuid.uuid4().hex[:8]}")
+    org_name: str
+    logo: Optional[str] = None
+    admin_name: str
+    admin_email: EmailStr
+    admin_mobile: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class OrganizationSignup(BaseModel):
+    org_name: str
+    admin_name: str
+    admin_email: EmailStr
+    admin_password: str
+    admin_mobile: str
+
 class UserRole(BaseModel):
     role: Literal['Admin', 'Director', 'Staff']
 
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    org_id: str
     name: str
     email: EmailStr
     mobile: Optional[str] = None
