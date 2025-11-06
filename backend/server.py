@@ -1868,11 +1868,28 @@ async def export_assets(current_user: dict = Depends(get_current_user)):
     if not assets:
         raise HTTPException(status_code=404, detail="No assets to export")
     
+    # Create DataFrame and select only the columns needed for import
     df = pd.DataFrame(assets)
+    
+    # Select and reorder columns to match import format
+    export_columns = ['asset_type', 'model', 'serial_number', 'purchase_date', 'vendor', 
+                     'value_ex_gst', 'warranty_period_months', 'alloted_to', 'email', 'department']
+    
+    # Only include columns that exist
+    df = df[[col for col in export_columns if col in df.columns]]
+    
     output = BytesIO()
     
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Assets')
+        
+        # Format the header row
+        workbook = writer.book
+        worksheet = writer.sheets['Assets']
+        
+        for cell in worksheet[1]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
     
     output.seek(0)
     
