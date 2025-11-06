@@ -617,7 +617,7 @@ async def get_active_clients_by_department(
     current_user: dict = Depends(get_current_user)
 ):
     """Get active clients filtered by service/department for project assignment"""
-    query = {"client_status": "Active"}
+    query = {"client_status": "Active", "org_id": current_user['org_id']}  # Filter by org
     if department:
         query['service'] = department
     
