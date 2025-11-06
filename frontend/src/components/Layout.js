@@ -7,8 +7,8 @@ export default function Layout({ children, user, onLogout }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [expandedMenus, setExpandedMenus] = useState({
     clients: true,
-    contractors: true,
-    employees: true
+    people: true,
+    trackers: true
   });
 
   useEffect(() => {
