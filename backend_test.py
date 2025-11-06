@@ -1378,6 +1378,9 @@ class BackendTester:
             # Test Asset Import functionality (CRITICAL - user reported not working)
             test_results['asset_import_functionality'] = self.test_asset_import_functionality()
             
+            # Test Import/Export functionality for ALL modules (CRITICAL - user specific request)
+            test_results['import_export_functionality'] = self.test_import_export_functionality()
+            
             # Cleanup
             self.cleanup()
         else:
