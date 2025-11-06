@@ -311,6 +311,7 @@ class OfferLetterGenerateRequest(BaseModel):
 class Asset(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: f"asset_{uuid.uuid4().hex[:8]}")
+    org_id: str
     asset_type: str
     model: str
     serial_number: str
