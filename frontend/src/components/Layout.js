@@ -47,10 +47,17 @@ export default function Layout({ children, user, onLogout }) {
                   width: '40px', 
                   height: '40px', 
                   borderRadius: '8px',
-                  objectFit: 'cover'
+                  objectFit: 'cover',
+                  background: 'white',
+                  padding: '2px'
                 }} 
                 onError={(e) => {
+                  console.error('Logo failed to load:', e.target.src);
+                  console.error('Logo URL from localStorage:', localStorage.getItem('org_logo'));
                   e.target.style.display = 'none';
+                }}
+                onLoad={() => {
+                  console.log('Logo loaded successfully:', localStorage.getItem('org_logo'));
                 }}
               />
               <h2>{localStorage.getItem('org_name') || 'One.Finance'}</h2>
