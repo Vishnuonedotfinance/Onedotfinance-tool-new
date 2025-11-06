@@ -1146,8 +1146,8 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
     today = datetime.now(timezone.utc)
     thirty_days_later = today + timedelta(days=30)
     
-    # Expiring agreements - get actual client names
-    clients_all = await db.clients.find({"client_status": "Active"}).to_list(1000)
+    # Expiring agreements - get actual client names (filter by org_id)
+    clients_all = await db.clients.find({"client_status": "Active", "org_id": current_user['org_id']}).to_list(1000)
     expiring_clients = []
     for client in clients_all:
         if client.get('end_date'):
