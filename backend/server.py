@@ -1237,8 +1237,8 @@ async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
             except:
                 pass
     
-    # Revenue metrics
-    clients = await db.clients.find({"client_status": "Active"}).to_list(1000)
+    # Revenue metrics (filter by org_id)
+    clients = await db.clients.find({"client_status": "Active", "org_id": current_user['org_id']}).to_list(1000)
     revenue_by_dept = {}
     for dept in ['PPC', 'SEO', 'Content', 'Backlink', 'Business Development', 'Others']:
         dept_clients = [c for c in clients if c.get('service') == dept]
