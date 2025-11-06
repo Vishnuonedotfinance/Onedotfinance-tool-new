@@ -7,6 +7,8 @@ import { Building2, Mail, Lock, User, Phone } from 'lucide-react';
 export default function Signup() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [orgData, setOrgData] = useState(null);
   const [formData, setFormData] = useState({
     org_name: '',
     admin_name: '',
