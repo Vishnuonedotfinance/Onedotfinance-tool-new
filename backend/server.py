@@ -596,7 +596,7 @@ async def get_clients(
     filter_status: str = None,
     filter_department: str = None
 ):
-    query = {}
+    query = {"org_id": current_user['org_id']}  # Filter by org_id
     if filter_status:
         query['client_status'] = filter_status
     if filter_department:
