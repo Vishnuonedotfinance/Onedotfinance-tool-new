@@ -2264,19 +2264,8 @@ async def initialize_services(current_user: dict = Depends(get_current_user)):
 
 @app.on_event("startup")
 async def startup():
-    # Create seed admin user
-    existing = await db.users.find_one({"email": "Vishnu@onedotfinance.com"})
-    if not existing:
-        admin = User(
-            name="Vishnu Admin",
-            email="Vishnu@onedotfinance.com",
-            role="Admin",
-            password_hash=hash_password("12345678"),
-            status="Active",
-            otp_verified=False
-        )
-        await db.users.insert_one(admin.model_dump())
-        logger.info("Admin user created")
+    logger.info("Application started successfully")
+    # No seed data - fresh start
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
