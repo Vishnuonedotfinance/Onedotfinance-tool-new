@@ -293,10 +293,9 @@ export default function Reports() {
                 style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb' }}
               >
                 <option value="">All Departments</option>
-                <option value="PPC">PPC</option>
-                <option value="SEO">SEO</option>
-                <option value="Content">Content</option>
-                <option value="Backlink">Backlink</option>
+                {services.map(service => (
+                  <option key={service.id} value={service.name}>{service.name}</option>
+                ))}
               </select>
               <button className="btn-secondary" onClick={downloadClientProfitability}>
                 <Download size={18} style={{ marginRight: '0.5rem', display: 'inline', verticalAlign: 'middle' }} />
