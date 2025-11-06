@@ -16,6 +16,8 @@ import Approval from './components/Approval';
 import AssetTracker from './components/AssetTracker';
 import Reports from './components/Reports';
 import Signup from './components/Signup';
+import ClientOnboarding from './components/ClientOnboarding';
+import Consumables from './components/Consumables';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
