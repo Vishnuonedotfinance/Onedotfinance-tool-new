@@ -6,6 +6,7 @@ import { Plus, Edit, Trash2, Download, Upload, FileDown } from 'lucide-react';
 export default function ClientOnboarding() {
   const [onboardings, setOnboardings] = useState([]);
   const [users, setUsers] = useState([]);
+  const [availableServices, setAvailableServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -23,6 +24,7 @@ export default function ClientOnboarding() {
   useEffect(() => {
     loadOnboardings();
     loadUsers();
+    loadAvailableServices();
   }, []);
 
   const loadOnboardings = async () => {
