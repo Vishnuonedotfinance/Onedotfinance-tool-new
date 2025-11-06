@@ -5,6 +5,7 @@ import { Building2, Upload, Trash2, Save } from 'lucide-react';
 
 export default function Settings({ user }) {
   const [orgName, setOrgName] = useState('');
+  const [orgId, setOrgId] = useState('');
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [currentLogo, setCurrentLogo] = useState(null);
@@ -17,8 +18,10 @@ export default function Settings({ user }) {
 
   const loadOrgData = () => {
     const storedOrgName = localStorage.getItem('org_name');
+    const storedOrgId = localStorage.getItem('org_id');
     const storedLogo = localStorage.getItem('org_logo');
     setOrgName(storedOrgName || 'One.Finance');
+    setOrgId(storedOrgId || '');
     setCurrentLogo(storedLogo);
     setLoading(false);
   };
