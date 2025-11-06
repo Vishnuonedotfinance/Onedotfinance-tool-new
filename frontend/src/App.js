@@ -73,6 +73,7 @@ function App() {
       <Toaster position="top-right" richColors />
       <BrowserRouter>
         <Routes>
+          <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={user ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
           <Route
             path="/*"
