@@ -111,6 +111,9 @@ user_problem_statement: |
   5. Users: Add delete functionality
   6. NEW: Reports module with Department P&L, Client Profitability, and Resource Utilization
   7. Update Client service dropdown to PPC, SEO, Content, Backlink
+  8. NEW: Client Onboarding module for managing sales pipeline
+  9. NEW: Consumables module for inventory management
+  10. Logo upload functionality for organizations
 
 backend:
   - task: "Department Updates - Add Backlink"
