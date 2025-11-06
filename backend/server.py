@@ -138,6 +138,7 @@ class ClientCreate(BaseModel):
 class Contractor(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: f"contractor_{uuid.uuid4().hex[:8]}")
+    org_id: str
     name: str
     doj: str
     start_date: str
