@@ -7,6 +7,7 @@ import FilterSort from './FilterSort';
 export default function ClientDatabase({ user }) {
   const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -21,7 +22,7 @@ export default function ClientDatabase({ user }) {
     start_date: '',
     tenure_months: 12,
     currency_preference: 'INR',
-    service: 'PPC',
+    service: '',
     amount_inr: 0,
     amount_ppc: 0,
     amount_seo: 0,
