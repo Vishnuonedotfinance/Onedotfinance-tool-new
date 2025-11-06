@@ -7,6 +7,7 @@ import FilterSort from './FilterSort';
 export default function ContractorDatabase({ user }) {
   const [contractors, setContractors] = useState([]);
   const [users, setUsers] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -33,7 +34,7 @@ export default function ContractorDatabase({ user }) {
     pincode: '',
     city: '',
     address_2: '',
-    department: 'PPC',
+    department: '',
     projects: [],
     monthly_retainer_inr: 0,
     designation: '',
