@@ -69,10 +69,21 @@ export default function ClientDatabase({ user }) {
   const loadUsers = async () => {
     try {
       const response = await api.get('/users');
-      const directors = response.data.filter(u => u.role === 'Director');
-      setUsers(directors);
+      setUsers(response.data.filter(u => u.role === 'Director' || u.role === 'Admin'));
     } catch (error) {
       console.error('Failed to load users');
+    }
+  };
+
+  const loadServices = async () => {
+    try {
+      const response = await api.get('/services');
+      setServices(response.data);
+      if (response.data.length > 0 && !formData.service) {
+        setFormData(prev => ({ ...prev, service: response.data[0].name }));
+      }
+    } catch (error) {
+      console.error('Failed to load services');
     }
   };
 
