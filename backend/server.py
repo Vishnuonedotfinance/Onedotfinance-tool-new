@@ -409,6 +409,34 @@ async def signup(request: OrganizationSignup):
     
     return {
         "message": "Organization created successfully",
+
+@api_router.post("/auth/upload-logo")
+async def upload_logo(org_id: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    # Verify user belongs to this org and is admin
+    if current_user.get('org_id') != org_id or current_user.get('role') != 'Admin':
+        raise HTTPException(status_code=403, detail="Only organization admin can upload logo")
+    
+    # Create uploads directory if it doesn't exist
+    uploads_dir = ROOT_DIR / "uploads" / "logos"
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Save file
+    file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+    filename = f"{org_id}.{file_extension}"
+    file_path = uploads_dir / filename
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Update organization with logo path
+    logo_url = f"/uploads/logos/{filename}"
+    await db.organizations.update_one(
+        {"org_id": org_id},
+        {"$set": {"logo": logo_url}}
+    )
+    
+    return {"message": "Logo uploaded successfully", "logo_url": logo_url}
+
         "org_id": org.org_id,
         "org_name": org.org_name,
         "admin_email": request.admin_email,
