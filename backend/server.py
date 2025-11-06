@@ -1767,7 +1767,9 @@ async def import_assets(file: UploadFile = File(...), current_user: dict = Depen
                 # Calculate warranty status
                 purchase_date = datetime.fromisoformat(asset.purchase_date)
                 warranty_end = purchase_date + timedelta(days=asset.warranty_period_months * 30)
-                asset.warranty_status = 'Active' if datetime.now() <= warranty_end else 'Expired'
+                now = datetime.now().date() if not purchase_date.tzinfo else datetime.now(timezone.utc).date()
+                warranty_end_date = warranty_end.date() if hasattr(warranty_end, 'date') else warranty_end
+                asset.warranty_status = 'Active' if now <= warranty_end_date else 'Expired'
                 
                 await db.assets.insert_one(asset.model_dump())
                 imported_count += 1
