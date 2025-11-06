@@ -224,6 +224,42 @@ backend:
         agent: "main"
         comment: "✅ FIXED: Added authentication dependency to /api/assets/sample endpoint (and also fixed same issue in /clients/sample, /contractors/sample, /employees/sample). All sample endpoints now require authentication."
 
+  - task: "Client Onboarding Module Backend"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added ClientOnboarding model (client_name, poc_name, poc_email, services, currency, pricing, proposal_status, onboarding_status). Implemented CRUD routes: GET/POST /api/client-onboarding, PATCH/DELETE /api/client-onboarding/{id}. All filtered by org_id."
+
+  - task: "Consumables Module Backend"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added StockAvailability and StockTransaction models. Implemented routes: GET /api/stock-availability, GET /api/stock-transactions, POST /api/stock-in, POST /api/stock-out, PATCH /api/stock-availability/{id}, GET /api/stock-products. All filtered by org_id with automatic stock quantity updates."
+
+  - task: "Static File Serving for Uploads"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added StaticFiles mount for /uploads directory to serve organization logos and other uploaded files. Created uploads/logos directory structure."
+
 frontend:
   - task: "Client Database Updates"
     implemented: true
