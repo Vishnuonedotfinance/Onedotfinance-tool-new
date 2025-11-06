@@ -972,6 +972,140 @@ class BackendTester:
             self.log(f"Static file serving test error: {str(e)}", "ERROR")
             return False
 
+    def test_asset_sample_download_import_flow(self):
+        """Test EXACT Asset Sample Download and Import Flow as requested by user"""
+        self.log("=== Testing Asset Sample Download and Import - Complete Flow ===")
+        
+        if not self.token:
+            self.log("No authentication token available", "ERROR")
+            return False
+            
+        fresh_sample_path = "/tmp/fresh_sample.xlsx"
+        created_asset_ids = []
+        
+        try:
+            # Step 1: Download Sample (GET /api/assets/sample)
+            self.log("Step 1: Download Sample - GET /api/assets/sample")
+            response = self.session.get(f"{BASE_URL}/assets/sample")
+            self.log(f"Download sample response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"❌ CRITICAL: Download sample failed: {response.text}", "ERROR")
+                return False
+                
+            # Save the response to /tmp/fresh_sample.xlsx
+            with open(fresh_sample_path, 'wb') as f:
+                f.write(response.content)
+                
+            file_size = len(response.content)
+            self.log(f"✅ Sample downloaded successfully to {fresh_sample_path}. Size: {file_size} bytes")
+            
+            # Verify file is created successfully
+            import os
+            if not os.path.exists(fresh_sample_path):
+                self.log(f"❌ CRITICAL: File not created at {fresh_sample_path}", "ERROR")
+                return False
+                
+            if os.path.getsize(fresh_sample_path) != file_size:
+                self.log(f"❌ CRITICAL: File size mismatch", "ERROR")
+                return False
+                
+            self.log(f"✅ File verified successfully created at {fresh_sample_path}")
+            
+            # Step 2: Import the EXACT Same File (POST /api/assets/import)
+            self.log("Step 2: Import the EXACT Same File - POST /api/assets/import")
+            
+            with open(fresh_sample_path, 'rb') as f:
+                files = {'file': ('fresh_sample.xlsx', f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                response = self.session.post(f"{BASE_URL}/assets/import", files=files)
+                
+            self.log(f"Import response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"❌ CRITICAL: Import failed: {response.text}", "ERROR")
+                return False
+                
+            import_result = response.json()
+            imported_count = import_result.get('imported', 0)
+            errors = import_result.get('errors', [])
+            
+            # Report the response exactly as requested
+            self.log("📊 IMPORT RESULTS:")
+            self.log(f"   • How many imported: {imported_count}")
+            self.log(f"   • How many errors: {len(errors) if errors else 0}")
+            
+            if errors:
+                self.log("❌ CRITICAL: Import had errors:")
+                for i, error in enumerate(errors, 1):
+                    self.log(f"   Error {i}: {error}")
+                return False
+            else:
+                self.log("✅ Import completed with ZERO errors")
+            
+            if imported_count == 0:
+                self.log("❌ CRITICAL: No assets were imported", "ERROR")
+                return False
+                
+            self.log(f"✅ Successfully imported {imported_count} assets with NO errors")
+            
+            # Step 3: Verify Import Worked (GET /api/assets)
+            self.log("Step 3: Verify Import Worked - GET /api/assets")
+            response = self.session.get(f"{BASE_URL}/assets")
+            self.log(f"Get assets response status: {response.status_code}")
+            
+            if response.status_code != 200:
+                self.log(f"❌ CRITICAL: Get assets failed: {response.text}", "ERROR")
+                return False
+                
+            assets = response.json()
+            self.log(f"Found {len(assets)} total assets in system")
+            
+            # Check if the 3 sample assets appear in the list
+            current_org_id = "org_cd4324ad"  # Known org_id for test user
+            org_assets = [a for a in assets if a.get('org_id') == current_org_id]
+            self.log(f"Found {len(org_assets)} assets for org {current_org_id}")
+            
+            # Look for the 3 sample assets (Laptop, Monitor, Keyboard)
+            sample_asset_types = ['Laptop', 'Monitor', 'Keyboard']
+            found_sample_assets = []
+            
+            for asset in org_assets:
+                if asset.get('asset_type') in sample_asset_types:
+                    found_sample_assets.append(asset)
+                    created_asset_ids.append(asset.get('id'))
+                    self.log(f"   ✅ Found sample asset: {asset.get('asset_type')} - {asset.get('model')}")
+            
+            if len(found_sample_assets) < 3:
+                self.log(f"❌ CRITICAL: Expected 3 sample assets but found {len(found_sample_assets)}", "ERROR")
+                self.log("Available assets in org:")
+                for asset in org_assets:
+                    self.log(f"   - {asset.get('asset_type', 'Unknown')} ({asset.get('model', 'No model')})")
+                return False
+            
+            self.log(f"✅ All 3 sample assets appear in the list correctly")
+            
+            # Clean up the downloaded file
+            try:
+                os.remove(fresh_sample_path)
+                self.log(f"Cleaned up downloaded file: {fresh_sample_path}")
+            except:
+                pass
+            
+            self.log("🎉 ASSET SAMPLE DOWNLOAD AND IMPORT FLOW - COMPLETE SUCCESS")
+            self.log("   ✅ Download worked perfectly")
+            self.log("   ✅ Import worked with ZERO errors")
+            self.log("   ✅ All 3 sample assets verified in system")
+            
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ CRITICAL ERROR in asset sample flow: {str(e)}", "ERROR")
+            return False
+        finally:
+            # Cleanup created assets if needed (optional for this test)
+            if created_asset_ids and len(created_asset_ids) > 0:
+                self.log("Note: Sample assets created during test (cleanup optional)")
+
     def test_asset_import_functionality(self):
         """Test Asset Import functionality - Download sample, Import file, Verify assets, Error handling"""
         self.log("=== Testing Asset Import Functionality ===")
