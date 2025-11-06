@@ -82,17 +82,13 @@ function App() {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/users" element={<Users user={user} />} />
                     <Route path="/clients" element={<ClientDatabase user={user} />} />
-                    <Route path="/clients/sla-generator" element={<SLAGenerator />} />
-                    <Route path="/clients/nda-generator" element={<NDAGenerator />} />
+                    <Route path="/client-onboarding" element={<ClientOnboarding />} />
                     <Route path="/contractors" element={<ContractorDatabase user={user} />} />
-                    <Route path="/contractors/ica-generator" element={<ICAGenerator />} />
                     <Route path="/employees" element={<EmployeeDatabase user={user} />} />
-                    <Route path="/employees/offer-letter-generator" element={<OfferLetterGenerator />} />
                     <Route path="/approval" element={<Approval user={user} />} />
                     <Route path="/asset-tracker" element={<AssetTracker />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/client-onboarding" element={<ClientOnboarding />} />
                     <Route path="/consumables" element={<Consumables />} />
+                    <Route path="/reports" element={<Reports />} />
                   </Routes>
                 </Layout>
               ) : (
