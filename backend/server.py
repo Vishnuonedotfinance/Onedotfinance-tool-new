@@ -1998,6 +1998,65 @@ async def export_assets(current_user: dict = Depends(get_current_user)):
         headers={'Content-Disposition': 'attachment; filename="assets_export.xlsx"'}
     )
 
+# ============= SERVICE/DEPARTMENT ROUTES =============
+@api_router.get("/services")
+async def get_services(current_user: dict = Depends(get_current_user)):
+    """Get all services for the organization"""
+    services = await db.services.find({"org_id": current_user['org_id']}, {"_id": 0}).to_list(100)
+    return services
+
+@api_router.post("/services")
+async def create_service(service: ServiceCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new service/department"""
+    if current_user['role'] != 'Admin':
+        raise HTTPException(status_code=403, detail="Only Admin can create services")
+    
+    # Check if service already exists
+    existing = await db.services.find_one({"org_id": current_user['org_id'], "name": service.name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Service with this name already exists")
+    
+    new_service = Service(**service.model_dump(), org_id=current_user['org_id'])
+    await db.services.insert_one(new_service.model_dump())
+    return {"message": "Service created successfully", "service": new_service}
+
+@api_router.patch("/services/{service_id}")
+async def update_service(service_id: str, service: ServiceCreate, current_user: dict = Depends(get_current_user)):
+    """Update a service/department"""
+    if current_user['role'] != 'Admin':
+        raise HTTPException(status_code=403, detail="Only Admin can update services")
+    
+    existing_service = await db.services.find_one({"id": service_id, "org_id": current_user['org_id']})
+    if not existing_service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Check if new name conflicts
+    name_conflict = await db.services.find_one({
+        "org_id": current_user['org_id'], 
+        "name": service.name,
+        "id": {"$ne": service_id}
+    })
+    if name_conflict:
+        raise HTTPException(status_code=400, detail="Service with this name already exists")
+    
+    await db.services.update_one(
+        {"id": service_id, "org_id": current_user['org_id']},
+        {"$set": {"name": service.name}}
+    )
+    return {"message": "Service updated successfully"}
+
+@api_router.delete("/services/{service_id}")
+async def delete_service(service_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a service/department"""
+    if current_user['role'] != 'Admin':
+        raise HTTPException(status_code=403, detail="Only Admin can delete services")
+    
+    result = await db.services.delete_one({"id": service_id, "org_id": current_user['org_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    return {"message": "Service deleted successfully"}
+
 # ============= CLIENT ONBOARDING ROUTES =============
 
 @api_router.get("/client-onboarding", response_model=List[ClientOnboarding])
