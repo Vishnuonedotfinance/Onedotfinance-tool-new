@@ -457,6 +457,40 @@ export default function Settings({ user }) {
           </div>
         </div>
       </div>
+
+      {/* Service Modal */}
+      {showServiceModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2>{editingService ? 'Edit Service' : 'Add Service'}</h2>
+              <button onClick={() => setShowServiceModal(false)} className="modal-close">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="form-grid">
+              <div className="form-group form-group-full">
+                <label>Service/Department Name <span>*</span></label>
+                <input
+                  type="text"
+                  value={serviceName}
+                  onChange={(e) => setServiceName(e.target.value)}
+                  placeholder="e.g., PPC, SEO, Content"
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => setShowServiceModal(false)} className="btn-secondary">
+                Cancel
+              </button>
+              <button onClick={handleSaveService} className="btn-success" disabled={submittingService}>
+                {submittingService ? 'Saving...' : editingService ? 'Update' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
