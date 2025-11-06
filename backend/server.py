@@ -662,9 +662,9 @@ async def delete_client(client_id: str, current_user: dict = Depends(get_current
     if current_user['role'] not in ['Admin', 'Director']:
         raise HTTPException(status_code=403, detail="Only Admin and Director can delete clients")
     
-    result = await db.clients.delete_one({"id": client_id})
+    result = await db.clients.delete_one({"id": client_id, "org_id": current_user['org_id']})
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Client not found")
+        raise HTTPException(status_code=404, detail="Client not found in your organization")
     
     return {"message": "Client deleted successfully"}
 
