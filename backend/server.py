@@ -1770,38 +1770,46 @@ async def import_employees(file: UploadFile = File(...), current_user: dict = De
         
         for index, row in df.iterrows():
             try:
+                # Handle date fields
+                def parse_date(date_val):
+                    if isinstance(date_val, (pd.Timestamp, datetime)):
+                        return date_val.strftime('%Y-%m-%d')
+                    return str(date_val)[:10]
+                
                 employee_data = EmployeeCreate(
-                    doj=str(row['doj'])[:10],
-                    work_email=str(row['work_email']),
-                    emp_id=str(row['emp_id']),
-                    first_name=str(row['first_name']),
-                    last_name=str(row['last_name']),
-                    father_name=str(row['father_name']),
-                    dob=str(row['dob'])[:10],
-                    mobile=str(row['mobile']),
-                    personal_email=str(row['personal_email']),
-                    pan=str(row['pan']),
-                    aadhar=str(row['aadhar']),
-                    uan=str(row['uan']),
-                    pf_account_no=str(row['pf_account_no']),
-                    bank_name=str(row['bank_name']),
-                    account_no=str(row['account_no']),
-                    ifsc=str(row['ifsc']),
-                    branch=str(row['branch']),
-                    address=str(row['address']),
-                    pincode=str(row['pincode']),
-                    city=str(row['city']),
+                    doj=parse_date(row['doj']),
+                    work_email=str(row['work_email']).strip().lower(),
+                    emp_id=str(row['emp_id']).strip().upper(),
+                    first_name=str(row['first_name']).strip(),
+                    last_name=str(row['last_name']).strip(),
+                    father_name=str(row['father_name']).strip(),
+                    dob=parse_date(row['dob']),
+                    mobile=str(row['mobile']).strip(),
+                    personal_email=str(row['personal_email']).strip().lower(),
+                    pan=str(row['pan']).strip().upper(),
+                    aadhar=str(row['aadhar']).strip(),
+                    uan=str(row['uan']).strip(),
+                    pf_account_no=str(row['pf_account_no']).strip(),
+                    bank_name=str(row['bank_name']).strip(),
+                    account_no=str(row['account_no']).strip(),
+                    ifsc=str(row['ifsc']).strip().upper(),
+                    branch=str(row['branch']).strip(),
+                    address=str(row['address']).strip(),
+                    pincode=str(row['pincode']).strip(),
+                    city=str(row['city']).strip(),
                     monthly_gross_inr=float(row['monthly_gross_inr']),
-                    department=str(row['department']),
-                    approver_user_id=str(row['approver_user_id'])
+                    department=str(row['department']).strip(),
+                    approver_user_id=str(row['approver_user_id']).strip()
                 )
                 
-                employee = Employee(**employee_data.model_dump())
+                employee = Employee(**employee_data.model_dump(), org_id=current_user['org_id'])
                 await db.employees.insert_one(employee.model_dump())
                 imported_count += 1
                 
             except Exception as e:
-                errors.append(f"Row {index + 2}: {str(e)}")
+                error_msg = f"Row {index + 2}: {str(e)}"
+                errors.append(error_msg)
+                print(f"Employee import error: {error_msg}")
         
         return {
             "message": f"Import completed. {imported_count} employees imported successfully.",
