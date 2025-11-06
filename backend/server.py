@@ -1701,31 +1701,37 @@ async def import_contractors(file: UploadFile = File(...), current_user: dict = 
         
         for index, row in df.iterrows():
             try:
+                # Handle date fields
+                def parse_date(date_val):
+                    if isinstance(date_val, (pd.Timestamp, datetime)):
+                        return date_val.strftime('%Y-%m-%d')
+                    return str(date_val)[:10]
+                
                 contractor_data = ContractorCreate(
-                    name=str(row['name']),
-                    doj=str(row['doj'])[:10],
-                    start_date=str(row['start_date'])[:10],
+                    name=str(row['name']).strip(),
+                    doj=parse_date(row['doj']),
+                    start_date=parse_date(row['start_date']),
                     tenure_months=int(row['tenure_months']),
-                    dob=str(row['dob'])[:10],
-                    pan=str(row['pan']),
-                    aadhar=str(row['aadhar']),
-                    mobile=str(row['mobile']),
-                    personal_email=str(row['personal_email']),
-                    bank_name=str(row['bank_name']),
-                    account_holder=str(row['account_holder']),
-                    account_no=str(row['account_no']),
-                    ifsc=str(row['ifsc']),
-                    address_1=str(row['address_1']),
-                    pincode=str(row['pincode']),
-                    city=str(row['city']),
-                    address_2=str(row.get('address_2', '')),
-                    department=str(row['department']),
+                    dob=parse_date(row['dob']),
+                    pan=str(row['pan']).strip().upper(),
+                    aadhar=str(row['aadhar']).strip(),
+                    mobile=str(row['mobile']).strip(),
+                    personal_email=str(row['personal_email']).strip().lower(),
+                    bank_name=str(row['bank_name']).strip(),
+                    account_holder=str(row['account_holder']).strip(),
+                    account_no=str(row['account_no']).strip(),
+                    ifsc=str(row['ifsc']).strip().upper(),
+                    address_1=str(row['address_1']).strip(),
+                    pincode=str(row['pincode']).strip(),
+                    city=str(row['city']).strip(),
+                    address_2=str(row.get('address_2', '')).strip(),
+                    department=str(row['department']).strip(),
                     monthly_retainer_inr=float(row['monthly_retainer_inr']),
-                    designation=str(row['designation']),
-                    approver_user_id=str(row['approver_user_id'])
+                    designation=str(row['designation']).strip(),
+                    approver_user_id=str(row['approver_user_id']).strip()
                 )
                 
-                contractor = Contractor(**contractor_data.model_dump())
+                contractor = Contractor(**contractor_data.model_dump(), org_id=current_user['org_id'])
                 contractor.end_date = calculate_end_date(contractor.start_date, contractor.tenure_months)
                 contractor.agreement_status = check_agreement_status(contractor.end_date)
                 
@@ -1733,7 +1739,9 @@ async def import_contractors(file: UploadFile = File(...), current_user: dict = 
                 imported_count += 1
                 
             except Exception as e:
-                errors.append(f"Row {index + 2}: {str(e)}")
+                error_msg = f"Row {index + 2}: {str(e)}"
+                errors.append(error_msg)
+                print(f"Contractor import error: {error_msg}")
         
         return {
             "message": f"Import completed. {imported_count} contractors imported successfully.",
