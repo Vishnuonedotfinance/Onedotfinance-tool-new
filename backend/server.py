@@ -1706,7 +1706,7 @@ async def get_assets(
     current_user: dict = Depends(get_current_user),
     department: str = None
 ):
-    query = {}
+    query = {"org_id": current_user['org_id']}  # Filter by org_id
     if department:
         query['department'] = department
     
@@ -1725,7 +1725,7 @@ async def get_assets(
 
 @api_router.post("/assets", response_model=Asset)
 async def create_asset(asset_data: AssetCreate, current_user: dict = Depends(get_current_user)):
-    asset = Asset(**asset_data.model_dump())
+    asset = Asset(**asset_data.model_dump(), org_id=current_user['org_id'])  # Add org_id
     
     # Calculate warranty status
     purchase_date = datetime.fromisoformat(asset.purchase_date)
@@ -1738,7 +1738,12 @@ async def create_asset(asset_data: AssetCreate, current_user: dict = Depends(get
 
 @api_router.patch("/assets/{asset_id}")
 async def update_asset(asset_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
-    await db.assets.update_one({"id": asset_id}, {"$set": update_data})
+    # Verify asset belongs to this org
+    asset = await db.assets.find_one({"id": asset_id, "org_id": current_user['org_id']})
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found in your organization")
+    
+    await db.assets.update_one({"id": asset_id, "org_id": current_user['org_id']}, {"$set": update_data})
     return {"message": "Asset updated successfully"}
 
 @api_router.delete("/assets/{asset_id}")
@@ -1746,9 +1751,9 @@ async def delete_asset(asset_id: str, current_user: dict = Depends(get_current_u
     if current_user['role'] not in ['Admin', 'Director']:
         raise HTTPException(status_code=403, detail="Only Admin and Director can delete assets")
     
-    result = await db.assets.delete_one({"id": asset_id})
+    result = await db.assets.delete_one({"id": asset_id, "org_id": current_user['org_id']})
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Asset not found")
+        raise HTTPException(status_code=404, detail="Asset not found in your organization")
     
     return {"message": "Asset deleted successfully"}
 
