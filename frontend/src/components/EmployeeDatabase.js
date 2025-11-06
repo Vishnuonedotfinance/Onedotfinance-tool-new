@@ -38,7 +38,7 @@ export default function EmployeeDatabase({ user }) {
     pincode: '',
     city: '',
     monthly_gross_inr: 0,
-    department: 'PPC',
+    department: '',
     projects: [],
     approver_user_id: ''
   });
