@@ -95,6 +95,8 @@ function App() {
                     <Route path="/approval" element={<Approval user={user} />} />
                     <Route path="/asset-tracker" element={<AssetTracker />} />
                     <Route path="/reports" element={<Reports />} />
+                    <Route path="/client-onboarding" element={<ClientOnboarding />} />
+                    <Route path="/consumables" element={<Consumables />} />
                   </Routes>
                 </Layout>
               ) : (
