@@ -196,6 +196,7 @@ class ContractorCreate(BaseModel):
 class Employee(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: f"emp_{uuid.uuid4().hex[:8]}")
+    org_id: str
     doj: str
     work_email: EmailStr
     emp_id: str
