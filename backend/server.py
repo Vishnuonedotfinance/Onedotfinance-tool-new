@@ -958,7 +958,7 @@ async def get_employees(
     filter_status: str = None,
     filter_department: str = None
 ):
-    query = {}
+    query = {"org_id": current_user['org_id']}  # Filter by org_id
     if filter_status:
         query['status'] = filter_status
     if filter_department:
@@ -975,7 +975,7 @@ async def get_employees(
 
 @api_router.post("/employees", response_model=Employee)
 async def create_employee(employee_data: EmployeeCreate, current_user: dict = Depends(get_current_user)):
-    employee = Employee(**employee_data.model_dump())
+    employee = Employee(**employee_data.model_dump(), org_id=current_user['org_id'])  # Add org_id
     
     doc = employee.model_dump()
     await db.employees.insert_one(doc)
@@ -983,7 +983,12 @@ async def create_employee(employee_data: EmployeeCreate, current_user: dict = De
 
 @api_router.patch("/employees/{employee_id}")
 async def update_employee(employee_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
-    await db.employees.update_one({"id": employee_id}, {"$set": update_data})
+    # Verify employee belongs to this org
+    employee = await db.employees.find_one({"id": employee_id, "org_id": current_user['org_id']})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found in your organization")
+    
+    await db.employees.update_one({"id": employee_id, "org_id": current_user['org_id']}, {"$set": update_data})
     return {"message": "Employee updated successfully"}
 
 @api_router.delete("/employees/{employee_id}")
@@ -992,9 +997,9 @@ async def delete_employee(employee_id: str, current_user: dict = Depends(get_cur
     if current_user['role'] not in ['Admin', 'Director']:
         raise HTTPException(status_code=403, detail="Only Admin and Director can delete employees")
     
-    result = await db.employees.delete_one({"id": employee_id})
+    result = await db.employees.delete_one({"id": employee_id, "org_id": current_user['org_id']})
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Employee not found")
+        raise HTTPException(status_code=404, detail="Employee not found in your organization")
     
     return {"message": "Employee deleted successfully"}
 
