@@ -288,12 +288,9 @@ export default function ContractorDatabase({ user }) {
               data-testid="department-filter"
             >
               <option value="">All Departments</option>
-              <option value="PPC">PPC</option>
-              <option value="SEO">SEO</option>
-              <option value="Content">Content</option>
-              <option value="Backlink">Backlink</option>
-              <option value="Business Development">Business Development</option>
-              <option value="Others">Others</option>
+              {services.map(service => (
+                <option key={service.id} value={service.name}>{service.name}</option>
+              ))}
             </select>
             <FilterSort
               onSortChange={setSortBy}
