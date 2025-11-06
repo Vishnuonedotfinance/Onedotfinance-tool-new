@@ -90,6 +90,7 @@ function App() {
                     <Route path="/asset-tracker" element={<AssetTracker />} />
                     <Route path="/consumables" element={<Consumables />} />
                     <Route path="/reports" element={<Reports />} />
+                    <Route path="/settings" element={<Settings user={user} />} />
                   </Routes>
                 </Layout>
               ) : (
