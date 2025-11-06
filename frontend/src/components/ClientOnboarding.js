@@ -251,14 +251,14 @@ export default function ClientOnboarding() {
                 <div className="form-group form-group-full">
                   <label>Services * (Multiple Select)</label>
                   <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', padding: '0.5rem 0' }}>
-                    {['PPC', 'SEO', 'Backlink', 'Content'].map(service => (
-                      <label key={service} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    {availableServices.map(service => (
+                      <label key={service.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                         <input
                           type="checkbox"
-                          checked={formData.services.includes(service)}
-                          onChange={() => handleServiceToggle(service)}
+                          checked={formData.services.includes(service.name)}
+                          onChange={() => handleServiceToggle(service.name)}
                         />
-                        {service}
+                        {service.name}
                       </label>
                     ))}
                   </div>
